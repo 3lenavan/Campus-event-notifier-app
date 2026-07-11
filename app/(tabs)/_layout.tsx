@@ -17,14 +17,14 @@ export default function Layout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.subtitle,
         tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopWidth: 0.5,
+          backgroundColor: isDark ? colors.card : "#FFF4BF",
+          borderTopWidth: 1,
           borderTopColor: colors.border,
           height: Platform.OS === 'ios' ? 85 : 60,
           paddingBottom: Platform.OS === 'ios' ? 20 : 8,
           paddingTop: 8,
-          shadowColor: "#000",
-          shadowOpacity: isDark ? 0.3 : 0.05,
+          shadowColor: "#4A2D00",
+          shadowOpacity: isDark ? 0.35 : 0.1,
           shadowRadius: 10,
           shadowOffset: { width: 0, height: -2 },
           elevation: 8,
@@ -40,7 +40,7 @@ export default function Layout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: "Home",
+          title: "Hive",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons 
               name={focused ? "home" : "home-outline"} 
@@ -53,10 +53,10 @@ export default function Layout() {
       <Tabs.Screen
         name="discover"
         options={{
-          title: "Discover",
+          title: "Explore",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons 
-              name={focused ? "compass" : "compass-outline"} 
+              name={focused ? "search" : "search-outline"} 
               size={size} 
               color={color} 
             />
@@ -66,7 +66,7 @@ export default function Layout() {
       <Tabs.Screen
         name="create-event"
         options={{
-          title: "Create",
+          title: "Buzz",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons 
               name={focused ? "add-circle" : "add-circle-outline"} 

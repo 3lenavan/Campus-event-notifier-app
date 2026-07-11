@@ -1,4 +1,5 @@
-import { supabase } from "./supabaseClient";
+import { DEMO_CLUBS, listDemoEvents } from "./demoData";
+import { isDemoMode, supabase } from "./supabaseClient";
 
 export interface Club {
   id: number;
@@ -11,6 +12,24 @@ export interface Club {
 
 // Fetch all clubs and include their upcoming events count
 export async function getClubs(): Promise<Club[]> {
+  if (isDemoMode) {
+    const events = await listDemoEvents();
+    const now = Date.now();
+    return DEMO_CLUBS.map((club) => ({
+      id: club.id,
+      name: club.name,
+      description: club.description,
+      category: club.category,
+      imageUrl: club.imageUrl,
+      events: events.filter(
+        (event) =>
+          event.clubId === String(club.id) &&
+          event.status === "approved" &&
+          new Date(event.dateISO).getTime() > now
+      ),
+    }));
+  }
+
   const { data, error } = await supabase
     .from("clubs")
     .select(`
@@ -50,6 +69,18 @@ export async function getClubs(): Promise<Club[]> {
 
 // Fetch one club by ID and its related events
 export async function getClubByIdSupabase(id: number): Promise<Club | null> {
+  if (isDemoMode) {
+    const club = DEMO_CLUBS.find((item) => item.id === id);
+    if (!club) return null;
+    return {
+      id: club.id,
+      name: club.name,
+      description: club.description,
+      category: club.category,
+      imageUrl: club.imageUrl,
+    };
+  }
+
   const { data, error } = await supabase
     .from("clubs")
     .select("id, name, description, category, image_url")
@@ -85,6 +116,23 @@ export async function getClubByIdSupabase(id: number): Promise<Club | null> {
 
 // Fetch only events belonging to a specific club
 export async function getEventsByClub(clubId: number) {
+  if (isDemoMode) {
+    const events = await listDemoEvents();
+    return events
+      .filter(
+        (event) =>
+          event.clubId === String(clubId) &&
+          event.status === "approved" &&
+          new Date(event.dateISO).getTime() > Date.now()
+      )
+      .map((event) => ({
+        ...event,
+        id: Number(event.id),
+        date: new Date(event.dateISO).toLocaleDateString(),
+        date_iso: event.dateISO,
+      }));
+  }
+
   const { data, error } = await supabase
     .from("events")
     .select("*")

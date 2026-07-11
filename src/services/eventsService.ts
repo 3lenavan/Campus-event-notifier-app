@@ -1,12 +1,33 @@
-import { supabase } from '../../data/supabaseClient';
+import {
+  createDemoEvent,
+  getDemoInteractionCounts,
+  listDemoEvents,
+} from '../../data/demoData';
+import { isDemoMode, supabase } from '../../data/supabaseClient';
 import { getEventPolicy } from '../lib/eventPolicy';
 import { CreateEventInput, Event } from '../types';
 import { getEventAttendeeCounts } from './interactionsService';
+
+const listDemoEventsWithAttendees = async (): Promise<Event[]> => {
+  const events = await listDemoEvents();
+  const attendeeCounts = await getDemoInteractionCounts(
+    'rsvps',
+    events.map((event) => event.id)
+  );
+  return events.map((event) => ({
+    ...event,
+    attendees: attendeeCounts[event.id] || 0,
+  }));
+};
 
 /**
  * Get all events sorted by creation date (newest first)
  */
 export const listEvents = async (): Promise<Event[]> => {
+  if (isDemoMode) {
+    return listDemoEventsWithAttendees();
+  }
+
   try {
     const { data, error } = await supabase
       .from('events')
@@ -51,6 +72,10 @@ export const listEvents = async (): Promise<Event[]> => {
  * Get all approved events sorted by creation date (newest first)
  */
 export const listApprovedEvents = async (forceRefresh: boolean = false): Promise<Event[]> => {
+  if (isDemoMode) {
+    return listDemoEventsWithAttendees();
+  }
+
   try {
     console.log('🔍 Querying Supabase for approved events...');
 
@@ -102,6 +127,11 @@ export const listApprovedEvents = async (forceRefresh: boolean = false): Promise
  * Get events for a specific club (only approved events)
  */
 export const listClubEvents = async (clubId: string): Promise<Event[]> => {
+  if (isDemoMode) {
+    const events = await listDemoEventsWithAttendees();
+    return events.filter((event) => event.clubId === clubId);
+  }
+
   try {
     const { data, error } = await supabase
       .from('events')
@@ -151,6 +181,13 @@ export const listClubEvents = async (clubId: string): Promise<Event[]> => {
  * Get the count of approved events for a specific club
  */
 export const getClubEventCount = async (clubId: string | number): Promise<number> => {
+  if (isDemoMode) {
+    const events = await listDemoEvents();
+    return events.filter(
+      (event) => event.clubId === String(clubId) && event.status === 'approved'
+    ).length;
+  }
+
   try {
     const { count, error } = await supabase
       .from('events')
@@ -174,6 +211,11 @@ export const getClubEventCount = async (clubId: string | number): Promise<number
  * Get a single event by ID (regardless of status - useful for viewing own pending events)
  */
 export const getEventById = async (eventId: string): Promise<Event | null> => {
+  if (isDemoMode) {
+    const events = await listDemoEventsWithAttendees();
+    return events.find((event) => event.id === eventId) || null;
+  }
+
   try {
     const numericId = parseInt(eventId);
     if (isNaN(numericId)) return null;
@@ -221,6 +263,12 @@ export const getEventById = async (eventId: string): Promise<Event | null> => {
  * Get events by their IDs
  */
 export const getEventsByIds = async (eventIds: string[]): Promise<Event[]> => {
+  if (isDemoMode) {
+    const events = await listDemoEventsWithAttendees();
+    const requestedIds = new Set(eventIds);
+    return events.filter((event) => requestedIds.has(event.id));
+  }
+
   try {
     if (eventIds.length === 0) return [];
 
@@ -278,6 +326,10 @@ export const getEventsByIds = async (eventIds: string[]): Promise<Event[]> => {
  * Create a new event
  */
 export const createEvent = async (eventInput: CreateEventInput, createdBy: string): Promise<Event> => {
+  if (isDemoMode) {
+    return createDemoEvent(eventInput, createdBy);
+  }
+
   try {
     const eventPolicy = await getEventPolicy();
     const status = eventPolicy.moderationMode === 'off' ? 'approved' : 'pending';

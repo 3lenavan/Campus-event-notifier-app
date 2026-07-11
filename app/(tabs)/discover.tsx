@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getClubs, Club } from "../../data/dataLoader";
 import { getClubEventCount } from "../../src/services/eventsService";
 import { useAppTheme, LightThemeColors } from "../../src/ThemeContext";
+import { HoneycombBackground } from "../../src/components";
 
 export default function Discover() {
   const router = useRouter();
@@ -76,12 +77,12 @@ export default function Discover() {
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      Academic: "#3B82F6",
+      Academic: "#D97706",
       Social: "#8B5CF6",
       Sports: "#22C55E",
       Arts: "#EC4899",
-      Career: "#F97316",
-      Other: "#6B7280",
+      Career: "#0EA5E9",
+      Other: "#6B4E16",
     };
     return colors[category] || colors["Other"];
   };
@@ -96,11 +97,16 @@ export default function Discover() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <HoneycombBackground />
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.background, borderColor: colors.border }]}>
+      <View style={[styles.header, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
         <View>
+          <View style={styles.kickerRow}>
+            <Ionicons name="search-outline" size={16} color={colors.primary} />
+            <Text style={[styles.kicker, { color: colors.primary }]}>Explore Cells</Text>
+          </View>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Discover</Text>
-          <Text style={[styles.headerSubtitle, { color: colors.subtitle }]}>Find clubs and organizations</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.subtitle }]}>Find clubs, groups, and the next event cluster.</Text>
         </View>
       </View>
 
@@ -114,7 +120,7 @@ export default function Discover() {
         />
         <TextInput
           style={[styles.input, { color: colors.text }]}
-          placeholder="Search clubs, categories..."
+          placeholder="Search the hive..."
           placeholderTextColor={colors.placeholderText}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -207,32 +213,53 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
+    marginTop: 8,
+    marginBottom: 16,
+    marginHorizontal: 20,
+    padding: 18,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  kickerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 8,
+  },
+  kicker: {
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  headerTitle: { 
+    fontSize: 30, 
+    fontWeight: "800",
+    letterSpacing: 0,
+  },
+  headerSubtitle: { 
+    fontSize: 14,
+    marginTop: 2,
+    maxWidth: 280,
+    fontWeight: "500",
+  },
+  legacyHeader: {
     paddingTop: 8,
     paddingBottom: 12,
     paddingHorizontal: 20,
     borderBottomWidth: 0.5,
   },
-  headerTitle: { 
-    fontSize: 28, 
-    fontWeight: "700",
-    letterSpacing: -0.5,
-  },
-  headerSubtitle: { 
-    fontSize: 14,
-    marginTop: 2,
-  },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 20,
-    marginTop: 16,
+    marginTop: 0,
     marginBottom: 20,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.03,
+    shadowColor: "#4A2D00",
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
@@ -268,11 +295,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   clubCard: {
-    borderRadius: 16,
+    borderRadius: 8,
     marginBottom: 24,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
+    shadowColor: "#4A2D00",
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,

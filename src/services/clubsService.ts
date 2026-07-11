@@ -1,11 +1,27 @@
 import { sha256 } from '../lib/hash';
 import { Club } from '../types';
-import { supabase } from '../../data/supabaseClient';
+import { DEMO_CLUBS } from '../../data/demoData';
+import { isDemoMode, supabase } from '../../data/supabaseClient';
+
+const toClub = (club: (typeof DEMO_CLUBS)[number]): Club => ({
+  id: String(club.id),
+  slug: club.slug,
+  name: club.name,
+  category: club.category,
+  verification_code: club.verificationCode,
+  code_hash: club.codeHash,
+  image_url: club.imageUrl,
+  created_at: club.createdAt,
+});
 
 /**
  * List all clubs from Supabase
  */
 export const listClubs = async (): Promise<Club[]> => {
+  if (isDemoMode) {
+    return DEMO_CLUBS.map(toClub);
+  }
+
   try {
     const { data, error } = await supabase
       .from('clubs')
@@ -47,6 +63,17 @@ export const updateClubCodes = async (
   clubId: string,
   options: { newCode?: string }
 ): Promise<Club> => {
+  if (isDemoMode) {
+    const club = DEMO_CLUBS.find((item) => String(item.id) === clubId);
+    if (!club) {
+      throw new Error('Club not found');
+    }
+    return {
+      ...toClub(club),
+      verification_code: options.newCode || club.verificationCode,
+    };
+  }
+
   try {
     const updateData: any = {};
 

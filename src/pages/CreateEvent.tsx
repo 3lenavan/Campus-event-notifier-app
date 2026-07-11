@@ -17,12 +17,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { supabase } from "../../data/supabaseClient";
+import { isDemoMode, supabase } from "../../data/supabaseClient";
 import { useAuthUser } from '../hooks/useAuthUser';
 import { listClubs } from '../services/clubsService';
 import { createEvent } from '../services/eventsService';
 import { Club } from '../types';
 import { useAppTheme, LightThemeColors } from '../ThemeContext';
+import { HoneycombBackground } from '../components';
 
 // Updated import to use rewritten image picker and uploader
 import { pickImage, uploadEventImage } from '../services/imageUploadService';
@@ -62,7 +63,7 @@ const WebDateInput: React.FC<{
         
         // Apply styles with dark text color for visibility
         // Ensure text is always visible - use dark color unless in dark mode
-        const textColor = isDark ? colors.text : (colors.text === '#FFFFFF' || colors.text === '#fff' || !colors.text || colors.text === colors.inputBackground ? '#000000' : colors.text);
+        const textColor = colors.text === '#FFFFFF' || colors.text === '#fff' || !colors.text || colors.text === colors.inputBackground ? '#000000' : colors.text;
         input.style.cssText = `
           width: 100%;
           padding: 12px;
@@ -160,7 +161,7 @@ interface CreateEventProps {
 
 export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
   const router = useRouter();
-  const { user } = useAuthUser();
+  const { user, profile } = useAuthUser();
   const themeContext = useAppTheme();
   const colors = themeContext?.colors || LightThemeColors;
   const isDark = themeContext?.isDark || false;
@@ -294,6 +295,16 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
   const loadUserClubs = async () => {
     if (!user) return;
 
+    if (isDemoMode) {
+      const availableClubs = await listClubs();
+      setUserClubIds(
+        availableClubs
+          .filter((club) => profile?.memberships.includes(club.slug))
+          .map((club) => club.id)
+      );
+      return;
+    }
+
     const { data, error } = await supabase
       .from('clubs_users')
       .select('club_id')
@@ -312,7 +323,7 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
       if (user) {
         loadUserClubs();
       }
-    }, [user])
+    }, [user, profile?.memberships])
   );
 
   useEffect(() => {
@@ -494,13 +505,21 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <HoneycombBackground />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={[styles.title, { color: colors.text }]}>Create Event</Text>
+          <View style={[styles.headerPanel, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
+            <View style={styles.kickerRow}>
+              <Ionicons name="megaphone-outline" size={16} color={colors.primary} />
+              <Text style={[styles.kicker, { color: colors.primary }]}>Send a Buzz</Text>
+            </View>
+            <Text style={[styles.title, { color: colors.text }]}>Create Event</Text>
+            <Text style={[styles.subtitle, { color: colors.subtitle }]}>Post a club event for the campus hive.</Text>
+          </View>
 
           {/* Club selection */}
           <View style={styles.inputContainer}>
@@ -511,7 +530,7 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
                   key={club.id}
                   style={[
                     styles.clubOption,
-                    { backgroundColor: isDark ? colors.border : '#E5E7EB' },
+                    { backgroundColor: isDark ? colors.border : colors.nectar, borderColor: colors.border },
                     selectedClubId === club.id && [styles.clubOptionSelected, { backgroundColor: colors.primary }],
                   ]}
                   onPress={() => setSelectedClubId(club.id)}
@@ -788,7 +807,25 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   verifyButtonText: { color: 'white', fontWeight: '600' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
+  headerPanel: {
+    padding: 18,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 20,
+  },
+  kickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  kicker: {
+    fontSize: 12,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  title: { fontSize: 28, fontWeight: '800', marginBottom: 4 },
+  subtitle: { fontSize: 14, fontWeight: '500' },
   inputContainer: { marginBottom: 20 },
   label: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
   input: {
@@ -836,7 +873,8 @@ const styles = StyleSheet.create({
   clubSelector: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   clubOption: {
     padding: 10,
-    borderRadius: 20,
+    borderRadius: 8,
+    borderWidth: 1,
   },
   clubOptionSelected: { },
   clubOptionTextSelected: { color: 'white' },

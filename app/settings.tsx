@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useAuthUser } from "../src/hooks/useAuthUser";
 import { LightThemeColors, useAppTheme } from "../src/ThemeContext";
+import { HoneycombBackground } from "../src/components";
 
 
 export default function Settings() {
@@ -13,7 +14,11 @@ export default function Settings() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.safeArea }]}>
-      <Text style={[styles.header, { color: colors.text }]}>Settings</Text>
+      <HoneycombBackground />
+      <View style={[styles.headerPanel, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
+        <Text style={[styles.header, { color: colors.text }]}>Settings</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.subtitle }]}>Tune your BuzzUp hive.</Text>
+      </View>
 
       <View style={[styles.card, styles.cardSpacing, styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <Text style={[styles.title, { color: colors.text }]}>Dark Mode</Text>
@@ -47,14 +52,24 @@ const styles = StyleSheet.create({
     paddingTop: 15,
   },
   header: {
-    fontSize: 22,
-    fontWeight: "700",
+    fontSize: 28,
+    fontWeight: "800",
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  headerPanel: {
+    marginHorizontal: 16,
     marginBottom: 20,
-    marginLeft: 20,
+    padding: 18,
+    borderRadius: 8,
+    borderWidth: 1,
   },
   card: {
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
   },
   cardSpacing: {

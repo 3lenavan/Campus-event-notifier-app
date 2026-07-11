@@ -11,12 +11,11 @@ const LightTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    // BuzzUp (SNHU) kawaii palette: blue + yellow accents
-    primary: "#1D4ED8", // SNHU blue
-    background: "#F0F7FF", // soft sky blue
+    primary: LightThemeColors.primary,
+    background: LightThemeColors.background,
     card: "#FFFFFF",
-    text: "#0B0C0E",
-    border: "#D6E4FF", // light blue border
+    text: LightThemeColors.text,
+    border: LightThemeColors.border,
   },
 };
 
@@ -24,11 +23,11 @@ const DarkThemeCustom = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    primary: "#60a5fa",
-    background: "#0b0c0e",
-    card: "#111214",
-    text: "#e5e7eb",
-    border: "#1f2937",
+    primary: DarkThemeColors.primary,
+    background: DarkThemeColors.background,
+    card: DarkThemeColors.card,
+    text: DarkThemeColors.text,
+    border: DarkThemeColors.border,
   },
 };
 
@@ -61,7 +60,7 @@ function RootLayoutContent() {
 
   return (
     <ThemeProvider value={navigationTheme}>
-      <StatusBar style={isDark ? "light" : "dark"} backgroundColor={isDark ? DarkThemeColors.background : "#f7f8fa"} />
+      <StatusBar style={isDark ? "light" : "dark"} backgroundColor={isDark ? DarkThemeColors.background : LightThemeColors.background} />
       <Stack
         screenOptions={{
           headerShown: false,

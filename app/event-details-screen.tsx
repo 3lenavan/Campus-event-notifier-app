@@ -37,6 +37,7 @@ import {
   isEventRSVPd,
 } from "../src/services/interactionsService";
 import { useAppTheme, LightThemeColors } from "../src/ThemeContext";
+import { HoneycombBackground } from "../src/components";
 
 // Event interface
 interface Event {
@@ -519,6 +520,7 @@ export default function EventDetails() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <HoneycombBackground />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Hero Image */}
         <View style={styles.heroContainer}>
@@ -563,6 +565,10 @@ export default function EventDetails() {
 
         {/* Content Section */}
         <View style={[styles.contentSection, { backgroundColor: colors.background }]}>
+          <View style={[styles.detailPill, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
+            <Ionicons name="radio-outline" size={15} color={colors.primary} />
+            <Text style={[styles.detailPillText, { color: colors.primary }]}>Event Buzz</Text>
+          </View>
           <Text style={[styles.title, { color: colors.text }]}>{event.title}</Text>
 
           {club && (
@@ -677,7 +683,7 @@ export default function EventDetails() {
             <TouchableOpacity
               style={[
                 styles.primaryButton,
-                { backgroundColor: rsvped ? colors.border : colors.primary },
+                { backgroundColor: rsvped ? colors.honey : colors.primary },
               ]}
               onPress={() => handleRSVP(event.id, event.title)}
               activeOpacity={0.8}
@@ -748,11 +754,27 @@ const styles = StyleSheet.create({
   contentSection: {
     padding: 20,
   },
+  detailPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 12,
+  },
+  detailPillText: {
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
   title: {
     fontSize: 32,
-    fontWeight: "700",
+    fontWeight: "800",
     marginBottom: 12,
-    letterSpacing: -0.5,
+    letterSpacing: 0,
     lineHeight: 38,
   },
   clubRow: {
@@ -796,7 +818,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   detailsCard: {
-    borderRadius: 16,
+    borderRadius: 8,
     padding: 20,
     marginBottom: 24,
     borderWidth: 1,
@@ -836,7 +858,7 @@ const styles = StyleSheet.create({
     color: "#EF4444",
   },
   primaryButton: {
-    borderRadius: 12,
+    borderRadius: 8,
     paddingVertical: 16,
     alignItems: "center",
     marginBottom: 12,
@@ -853,7 +875,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12,
+    borderRadius: 8,
     paddingVertical: 14,
     gap: 8,
     borderWidth: 1,

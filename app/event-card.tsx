@@ -52,7 +52,6 @@ export function EventCard({
 }: EventCardProps) {
   const themeContext = useAppTheme();
   const colors = themeContext?.colors || LightThemeColors;
-  const isDark = themeContext?.isDark || false;
 
   // ALWAYS USE dateISO when available
   const getDisplayDate = () => {
@@ -71,12 +70,12 @@ export function EventCard({
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      Academic: "#BFDBFE",
-      Social: "#BBF7D0",
-      Sports: "#FECACA",
-      Arts: "#E9D5FF",
-      Career: "#FED7AA",
-      Other: "#E5E7EB",
+      Academic: "#F59E0B",
+      Social: "#10B981",
+      Sports: "#EF4444",
+      Arts: "#8B5CF6",
+      Career: "#0EA5E9",
+      Other: "#6B4E16",
     };
     return colors[category] || colors["Other"];
   };
@@ -160,7 +159,7 @@ export function EventCard({
                 />
               </TouchableOpacity>
             )}
-            {onFavorite && (
+          {onFavorite && (
               <TouchableOpacity
                 style={styles.iconButton}
                 onPress={(e) => {
@@ -171,7 +170,7 @@ export function EventCard({
                 <Ionicons
                   name={favorited ? "bookmark" : "bookmark-outline"}
                   size={24}
-                  color={favorited ? "#3B82F6" : "#FFFFFF"}
+                  color={favorited ? colors.secondary : "#FFFFFF"}
                 />
               </TouchableOpacity>
             )}
@@ -182,7 +181,7 @@ export function EventCard({
       <View style={[styles.cardContent, { backgroundColor: colors.card }]}>
         <View style={styles.headerRow}>
           <View style={styles.locationRow}>
-            <Ionicons name="location-outline" size={14} color={colors.subtitle} />
+          <Ionicons name="location-outline" size={14} color={colors.primary} />
             <Text style={[styles.locationText, { color: colors.subtitle }]}>{event.location}</Text>
           </View>
           {typeof likesCount === "number" && likesCount > 0 && (
@@ -203,11 +202,11 @@ export function EventCard({
 
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
-            <Ionicons name="calendar-outline" size={16} color={colors.subtitle} />
+            <Ionicons name="calendar-outline" size={16} color={colors.primary} />
             <Text style={[styles.metaText, { color: colors.text }]}>{getDisplayDate()}</Text>
           </View>
           <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={16} color={colors.subtitle} />
+            <Ionicons name="time-outline" size={16} color={colors.primary} />
             <Text style={[styles.metaText, { color: colors.text }]}>{event.time}</Text>
           </View>
         </View>
@@ -226,10 +225,15 @@ export function EventCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
+    borderRadius: 8,
     marginBottom: 24,
     overflow: "hidden",
     borderWidth: 0.5,
+    shadowColor: "#4A2D00",
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
 
   imageContainer: {
@@ -261,7 +265,7 @@ const styles = StyleSheet.create({
   },
 
   cardContent: {
-    padding: 20,
+    padding: 18,
   },
 
   headerRow: {
@@ -286,7 +290,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(239, 68, 68, 0.1)",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 8,
   },
 
   ratingText: {
@@ -297,8 +301,8 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 24,
-    fontWeight: "700",
+    fontSize: 23,
+    fontWeight: "800",
     marginBottom: 8,
   },
 
@@ -328,7 +332,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 8,
   },
 
   seeMoreText: {
@@ -339,7 +343,7 @@ const styles = StyleSheet.create({
   },
 
   compactCard: {
-    borderRadius: 16,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 12,
     borderWidth: 0.5,

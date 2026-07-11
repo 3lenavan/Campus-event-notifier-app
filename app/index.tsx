@@ -2,6 +2,8 @@ import { router } from "expo-router";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { HoneycombBackground } from "../src/components";
 import { auth } from "../src/lib/firebase";
 import { useAppTheme, LightThemeColors } from "../src/ThemeContext";
 
@@ -114,17 +116,14 @@ export default function Index() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}> 
       <View style={styles.container}>
-        {!isDark && (
-          <>
-            <View style={[styles.heroBubble]} />
-            <View style={[styles.heroBubbleSmall]} />
-            <View style={[styles.heroBubbleMid]} />
-          </>
-        )}
-        <View style={[styles.card, styles.glassCard, { backgroundColor: isDark ? colors.card : 'rgba(255, 255, 255, 0.85)', borderColor: isDark ? colors.border : 'rgba(255, 255, 255, 0.6)' }]}> 
-          <Text style={[styles.appName, { color: colors.primary }]}>🐝 BuzzUp</Text>
-          <Text style={[styles.tagline, { color: "#F59E0B" }]}>Penmen Notifier!</Text>
-          <Text style={[styles.subtitle, { color: colors.subtitle }]}>Sign in or create an account</Text>
+        <HoneycombBackground variant="dense" />
+        <View style={[styles.card, styles.glassCard, { backgroundColor: isDark ? colors.card : 'rgba(255, 252, 242, 0.94)', borderColor: colors.border }]}> 
+          <View style={[styles.mark, { backgroundColor: colors.accent }]}>
+            <Ionicons name="radio-outline" size={28} color={colors.secondary} />
+          </View>
+          <Text style={[styles.appName, { color: colors.text }]}>BuzzUp</Text>
+          <Text style={[styles.tagline, { color: colors.primary }]}>Campus events from the hive</Text>
+          <Text style={[styles.subtitle, { color: colors.subtitle }]}>Sign in to catch the next campus buzz.</Text>
 
           <View style={styles.spacer} />
 
@@ -155,8 +154,8 @@ export default function Index() {
             <Text style={styles.primaryBtnText}>Sign In</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.secondaryBtn, { backgroundColor: isDark ? colors.border : '#FACC15', borderColor: 'transparent' }]} onPress={() => router.replace("/signup")}>
-            <Text style={[styles.secondaryBtnText, { color: isDark ? colors.text : '#111827' }]}>Create Account</Text>
+          <TouchableOpacity style={[styles.secondaryBtn, { backgroundColor: isDark ? colors.border : colors.honey, borderColor: 'transparent' }]} onPress={() => router.replace("/signup")}>
+            <Text style={[styles.secondaryBtnText, { color: isDark ? colors.text : colors.accent }]}>Create Account</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -174,38 +173,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 24,
   },
-  heroBubble: {
-    position: "absolute",
-    top: 40,
-    right: -30,
-    width: 180,
-    height: 180,
-    backgroundColor: "#DBEAFE",
-    borderRadius: 120,
-  },
-  heroBubbleSmall: {
-    position: "absolute",
-    bottom: 60,
-    left: -20,
-    width: 120,
-    height: 120,
-    backgroundColor: "#FEF9C3",
-    borderRadius: 100,
-  },
-  // Extra bubble for vibrance
-  heroBubbleMid: {
-    position: "absolute",
-    top: 140,
-    left: -40,
-    width: 160,
-    height: 160,
-    backgroundColor: "#BFDBFE",
-    borderRadius: 120,
-  },
   card: {
     width: "100%",
     maxWidth: 420,
-    borderRadius: 24,
+    borderRadius: 8,
     padding: 20,
     borderWidth: 1,
     shadowColor: "#000",
@@ -218,8 +189,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderColor: 'rgba(255, 255, 255, 0.6)',
     borderWidth: 1.5,
-    shadowColor: '#1D4ED8',
-    shadowOpacity: 0.1,
+    shadowColor: '#4A2D00',
+    shadowOpacity: 0.14,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
@@ -228,8 +199,16 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "700",
   },
-  appName: { fontSize: 32, fontWeight: "800" },
-  tagline: { fontSize: 14, fontWeight: "700", marginTop: 2 },
+  mark: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+  appName: { fontSize: 36, fontWeight: "800" },
+  tagline: { fontSize: 15, fontWeight: "700", marginTop: 2 },
   subtitle: {
     marginTop: 6,
     fontSize: 14,
@@ -254,7 +233,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 16,
-    shadowColor: "#1D4ED8",
+    shadowColor: "#4A2D00",
     shadowOpacity: 0.25,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 6 },

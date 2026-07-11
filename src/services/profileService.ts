@@ -1,5 +1,10 @@
 import { User } from "firebase/auth";
-import { supabase } from "../../data/supabaseClient";
+import {
+  DEMO_CLUBS,
+  getDemoProfile,
+  saveDemoProfile,
+} from "../../data/demoData";
+import { isDemoMode, supabase } from "../../data/supabaseClient";
 import { ADMIN_EMAILS } from "../lib/constants";
 import { sha256 } from "../lib/hash";
 import { Club, UserProfile } from "../types";
@@ -8,6 +13,10 @@ import { Club, UserProfile } from "../types";
  * Load user profile from Supabase
  */
 export const getProfile = async (uid: string): Promise<UserProfile | null> => {
+  if (isDemoMode) {
+    return getDemoProfile(uid);
+  }
+
   try {
     // Load basic profile
     const { data: profileData, error: profileError } = await supabase
@@ -71,6 +80,18 @@ export const upsertProfileFromAuth = async (
     updated_at: new Date().toISOString(),
   };
 
+  if (isDemoMode) {
+    const existing = await getDemoProfile(user.uid);
+    return saveDemoProfile({
+      uid: user.uid,
+      name: profile.name,
+      email: profile.email,
+      role: existing?.role || "student",
+      isAdmin,
+      memberships: existing?.memberships || [],
+    });
+  }
+
   const { data, error } = await supabase
     .from("user_profiles")
     .upsert(profile, { onConflict: "uid" })
@@ -102,6 +123,48 @@ export const verifyClubMembership = async (
   codePlaintext: string
 ): Promise<{ success: boolean; message: string; club?: Club }> => {
   try {
+    if (isDemoMode) {
+      const normalizedSlug = clubSlug.trim().toLowerCase();
+      const normalizedCode = codePlaintext.trim().toUpperCase();
+      const demoClub = DEMO_CLUBS.find(
+        (club) =>
+          club.slug === normalizedSlug &&
+          club.verificationCode.toUpperCase() === normalizedCode
+      );
+
+      if (!demoClub) {
+        return { success: false, message: "Invalid club or code." };
+      }
+
+      const existing = await getDemoProfile(uid);
+      if (!existing) {
+        return { success: false, message: "Please sign in again and retry." };
+      }
+
+      const memberships = new Set(existing.memberships);
+      memberships.add(demoClub.slug);
+      await saveDemoProfile({
+        ...existing,
+        role: "member",
+        memberships: [...memberships],
+      });
+
+      return {
+        success: true,
+        message: `Successfully joined ${demoClub.name}.`,
+        club: {
+          id: String(demoClub.id),
+          slug: demoClub.slug,
+          name: demoClub.name,
+          category: demoClub.category,
+          verification_code: demoClub.verificationCode,
+          code_hash: demoClub.codeHash,
+          image_url: demoClub.imageUrl,
+          created_at: demoClub.createdAt,
+        },
+      };
+    }
+
     console.log("📌 VERIFY INPUT:");
     console.log("clubSlug =", clubSlug);
     console.log("codePlaintext =", codePlaintext);
@@ -177,6 +240,12 @@ export const isClubMember = async (
   uid: string,
   clubId: number
 ): Promise<boolean> => {
+  if (isDemoMode) {
+    const profile = await getDemoProfile(uid);
+    const club = DEMO_CLUBS.find((item) => item.id === clubId);
+    return Boolean(profile && club && profile.memberships.includes(club.slug));
+  }
+
   try {
     const { data } = await supabase
       .from("clubs_users")

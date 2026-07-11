@@ -8,6 +8,7 @@ import { useAuthUser } from "../src/hooks/useAuthUser";
 import { listClubEvents } from "../src/services/eventsService";
 import { getEventsInteractions } from "../src/services/interactionsService";
 import { useAppTheme, LightThemeColors } from "../src/ThemeContext";
+import { HoneycombBackground } from "../src/components";
 
 export default function ClubDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -186,6 +187,7 @@ export default function ClubDetails() {
       <Stack.Screen options={{ title: club.name, headerShown: false }} />
 
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <HoneycombBackground />
         <ScrollView 
           style={[styles.container, { backgroundColor: colors.background }]}
           showsVerticalScrollIndicator={false}
@@ -232,7 +234,11 @@ export default function ClubDetails() {
           </View>
 
           {/* Club Info */}
-          <View style={styles.contentSection}>
+          <View style={[styles.contentSection, { backgroundColor: isDark ? colors.background : "transparent" }]}>
+            <View style={[styles.detailPill, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
+              <Ionicons name="people-outline" size={15} color={colors.primary} />
+              <Text style={[styles.detailPillText, { color: colors.primary }]}>Hive Cell</Text>
+            </View>
             <Text style={[styles.title, { color: colors.text }]}>{club.name}</Text>
             
             <View style={styles.locationRow}>
@@ -258,7 +264,7 @@ export default function ClubDetails() {
             </View>
 
             {/* Event Tabs */}
-            <View style={[styles.tabsContainer, { backgroundColor: isDark ? colors.border : "#F3F4F6" }]}>
+            <View style={[styles.tabsContainer, { backgroundColor: isDark ? colors.border : colors.nectar }]}>
               <TouchableOpacity
                 style={[styles.tab, activeTab === 'upcoming' && [styles.tabActive, { backgroundColor: colors.card }]]}
                 onPress={() => setActiveTab('upcoming')}
@@ -407,7 +413,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   categoryBadge: {
-    borderRadius: 20,
+    borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 8,
     shadowColor: "#000",
@@ -425,11 +431,27 @@ const styles = StyleSheet.create({
   contentSection: {
     padding: 20,
   },
+  detailPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 12,
+  },
+  detailPillText: {
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
   title: { 
     fontSize: 32, 
-    fontWeight: "700", 
+    fontWeight: "800", 
     marginBottom: 12,
-    letterSpacing: -0.5,
+    letterSpacing: 0,
     lineHeight: 38,
   },
   locationRow: {
@@ -507,7 +529,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   eventCard: {
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     overflow: "hidden",
     shadowColor: "#000",

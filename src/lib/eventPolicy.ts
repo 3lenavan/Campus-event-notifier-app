@@ -1,4 +1,4 @@
-import { supabase } from "../../data/supabaseClient";
+import { isDemoMode, supabase } from "../../data/supabaseClient";
 
 export type EventPolicy = {
   enabledGlobal: boolean;
@@ -50,6 +50,10 @@ const isAuthOrRLSError = (error: any) => {
  * Get the current event policy with sensible defaults
  */
 export const getEventPolicy = async (): Promise<EventPolicy> => {
+  if (isDemoMode) {
+    return DEFAULT_POLICY;
+  }
+
   try {
     const { data, error } = await supabase
       .from("event_policy")
@@ -108,6 +112,10 @@ export const getEventPolicy = async (): Promise<EventPolicy> => {
  * Set the event policy
  */
 export const setEventPolicy = async (policy: EventPolicy): Promise<void> => {
+  if (isDemoMode) {
+    return;
+  }
+
   try {
     const { error } = await supabase.from("event_policy").upsert(
       {

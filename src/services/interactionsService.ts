@@ -2,7 +2,14 @@
 // Likes = Supabase
 // Favorites = Supabase
 
-import { supabase } from "../../data/supabaseClient";
+import {
+  getDemoInteractionCounts,
+  getDemoUserEventIds,
+  hasDemoInteraction,
+  setDemoInteraction,
+  toggleDemoInteraction,
+} from "../../data/demoData";
+import { isDemoMode, supabase } from "../../data/supabaseClient";
 import { db } from "../lib/firebase"; // only needed for notifications etc., KEEPING
 
 // Helper: event_id is bigint in Supabase, so always convert safely
@@ -14,6 +21,11 @@ const toBigIntId = (id: string | number): number => {
 
 // SUPABASE LIKES
 export const likeEvent = async (userId: string, eventId: string): Promise<void> => {
+  if (isDemoMode) {
+    await setDemoInteraction("likes", userId, eventId, true);
+    return;
+  }
+
   const { error } = await supabase.from("likes").insert({
     user_uid: userId,
     event_id: eventId,
@@ -26,6 +38,11 @@ export const likeEvent = async (userId: string, eventId: string): Promise<void> 
 };
 
 export const unlikeEvent = async (userId: string, eventId: string): Promise<void> => {
+  if (isDemoMode) {
+    await setDemoInteraction("likes", userId, eventId, false);
+    return;
+  }
+
   const { error } = await supabase
     .from("likes")
     .delete()
@@ -39,6 +56,10 @@ export const unlikeEvent = async (userId: string, eventId: string): Promise<void
 };
 
 export const isEventLiked = async (userId: string, eventId: string): Promise<boolean> => {
+  if (isDemoMode) {
+    return hasDemoInteraction("likes", userId, eventId);
+  }
+
   const { data, error } = await supabase
     .from("likes")
     .select("id")
@@ -55,6 +76,11 @@ export const isEventLiked = async (userId: string, eventId: string): Promise<boo
 };
 
 export const getEventLikeCount = async (eventId: string): Promise<number> => {
+  if (isDemoMode) {
+    const counts = await getDemoInteractionCounts("likes", [eventId]);
+    return counts[eventId] || 0;
+  }
+
   const { count, error } = await supabase
     .from("likes")
     .select("*", { count: "exact", head: true })
@@ -69,6 +95,10 @@ export const getEventLikeCount = async (eventId: string): Promise<number> => {
 };
 
 export const toggleLike = async (userId: string, eventId: string): Promise<boolean> => {
+  if (isDemoMode) {
+    return toggleDemoInteraction("likes", userId, eventId);
+  }
+
   const liked = await isEventLiked(userId, eventId);
 
   if (liked) {
@@ -81,6 +111,10 @@ export const toggleLike = async (userId: string, eventId: string): Promise<boole
 };
 
 export const getUserLikedEvents = async (userId: string): Promise<string[]> => {
+  if (isDemoMode) {
+    return getDemoUserEventIds("likes", userId);
+  }
+
   const { data, error } = await supabase
     .from("likes")
     .select("event_id")
@@ -96,6 +130,11 @@ export const getUserLikedEvents = async (userId: string): Promise<string[]> => {
 
 // SUPABASE FAVORITES — THIS SECTION IS EXACTLY WHAT YOU ALREADY HAD
 export const favoriteEvent = async (userId: string, eventId: string): Promise<void> => {
+  if (isDemoMode) {
+    await setDemoInteraction("favorites", userId, eventId, true);
+    return;
+  }
+
   const { error } = await supabase.from("favorites").insert({
     user_uid: userId,
     event_id: eventId,
@@ -108,6 +147,11 @@ export const favoriteEvent = async (userId: string, eventId: string): Promise<vo
 };
 
 export const unfavoriteEvent = async (userId: string, eventId: string): Promise<void> => {
+  if (isDemoMode) {
+    await setDemoInteraction("favorites", userId, eventId, false);
+    return;
+  }
+
   const { error } = await supabase
     .from("favorites")
     .delete()
@@ -121,6 +165,10 @@ export const unfavoriteEvent = async (userId: string, eventId: string): Promise<
 };
 
 export const isEventFavorited = async (userId: string, eventId: string): Promise<boolean> => {
+  if (isDemoMode) {
+    return hasDemoInteraction("favorites", userId, eventId);
+  }
+
   const { data, error } = await supabase
     .from("favorites")
     .select("id")
@@ -137,6 +185,10 @@ export const isEventFavorited = async (userId: string, eventId: string): Promise
 };
 
 export const getUserFavoritedEvents = async (userId: string): Promise<string[]> => {
+  if (isDemoMode) {
+    return getDemoUserEventIds("favorites", userId);
+  }
+
   const { data, error } = await supabase
     .from("favorites")
     .select("event_id")
@@ -151,6 +203,10 @@ export const getUserFavoritedEvents = async (userId: string): Promise<string[]> 
 };
 
 export const toggleFavorite = async (userId: string, eventId: string): Promise<boolean> => {
+  if (isDemoMode) {
+    return toggleDemoInteraction("favorites", userId, eventId);
+  }
+
   const isFav = await isEventFavorited(userId, eventId);
 
   if (isFav) {
@@ -167,6 +223,11 @@ export const rsvpToEvent = async (
   userId: string,
   eventId: string
 ): Promise<void> => {
+  if (isDemoMode) {
+    await setDemoInteraction("rsvps", userId, eventId, true);
+    return;
+  }
+
   const payload = {
     firebase_uid: userId,
     event_id: toBigIntId(eventId),
@@ -183,6 +244,11 @@ export const rsvpToEvent = async (
 };
 
 export const cancelRSVP = async (userId: string, eventId: string): Promise<void> => {
+  if (isDemoMode) {
+    await setDemoInteraction("rsvps", userId, eventId, false);
+    return;
+  }
+
   const eid = toBigIntId(eventId);
 
   const { error } = await supabase
@@ -198,6 +264,10 @@ export const cancelRSVP = async (userId: string, eventId: string): Promise<void>
 };
 
 export const isEventRSVPd = async (userId: string, eventId: string): Promise<boolean> => {
+  if (isDemoMode) {
+    return hasDemoInteraction("rsvps", userId, eventId);
+  }
+
   const eid = toBigIntId(eventId);
 
   const { data, error } = await supabase
@@ -216,6 +286,10 @@ export const isEventRSVPd = async (userId: string, eventId: string): Promise<boo
 };
 
 export const getUserRSVPdEvents = async (userId: string): Promise<string[]> => {
+  if (isDemoMode) {
+    return getDemoUserEventIds("rsvps", userId);
+  }
+
   const { data, error } = await supabase
     .from("event_rsvp")
     .select("event_id")
@@ -233,6 +307,10 @@ export const toggleRSVP = async (
   userId: string,
   eventId: string
 ): Promise<boolean> => {
+  if (isDemoMode) {
+    return toggleDemoInteraction("rsvps", userId, eventId);
+  }
+
   const isRSVPd = await isEventRSVPd(userId, eventId);
 
   if (isRSVPd) {
@@ -252,6 +330,10 @@ export const getEventAttendeeCounts = async (
   eventIds: string[]
 ): Promise<Record<string, number>> => {
   if (eventIds.length === 0) return {};
+
+  if (isDemoMode) {
+    return getDemoInteractionCounts("rsvps", eventIds);
+  }
 
   try {
     // Convert string IDs to numbers
@@ -313,6 +395,21 @@ export const getEventsInteractions = async (
   rsvpedEvents: Set<string>;
   likeCounts: Record<string, number>;
 }> => {
+  if (isDemoMode) {
+    const [likedIds, favoriteIds, rsvpIds, likeCounts] = await Promise.all([
+      getDemoUserEventIds("likes", userId),
+      getDemoUserEventIds("favorites", userId),
+      getDemoUserEventIds("rsvps", userId),
+      getDemoInteractionCounts("likes", eventIds),
+    ]);
+    return {
+      likedEvents: new Set(likedIds),
+      favoritedEvents: new Set(favoriteIds),
+      rsvpedEvents: new Set(rsvpIds),
+      likeCounts,
+    };
+  }
+
   const likedEvents = new Set<string>();
   const favoritedEvents = new Set<string>();
   const rsvpedEvents = new Set<string>();

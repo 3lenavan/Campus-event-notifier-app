@@ -1,4 +1,5 @@
 import { router, useFocusEffect } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { getAuth } from "firebase/auth";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
@@ -13,6 +14,7 @@ import {
 } from "../../src/services/interactionsService";
 import EventCard, { Event as BaseEvent } from "../event-card";
 import { useAppTheme, LightThemeColors } from "../../src/ThemeContext";
+import { HoneycombBackground } from "../../src/components";
 
 type FeedEvent = BaseEvent & {
   likes: number;
@@ -292,6 +294,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top"]}>
+      <HoneycombBackground />
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
@@ -299,13 +302,17 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         ListHeaderComponent={
-          <View style={styles.header}>
+          <View style={[styles.header, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
             <View>
+              <View style={styles.kickerRow}>
+                <Ionicons name="radio-outline" size={16} color={colors.primary} />
+                <Text style={[styles.kicker, { color: colors.primary }]}>Hive Feed</Text>
+              </View>
               <Text style={[styles.headerTitle, { color: colors.text }]}>{getUserGreeting()}</Text>
-              <Text style={[styles.headerSubtitle, { color: colors.subtitle }]}>Welcome to Campus Events</Text>
+              <Text style={[styles.headerSubtitle, { color: colors.subtitle }]}>Fresh campus buzz, sorted by what is coming up next.</Text>
             </View>
             {user && (
-              <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.accent, borderColor: colors.secondary }]}>
                 <Text style={styles.avatarText}>
                   {(profile?.name || user?.displayName || user?.email || "?")[0].toUpperCase()}
                 </Text>
@@ -343,24 +350,39 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 8,
-    paddingBottom: 24,
-    paddingHorizontal: 0,
+    marginTop: 8,
+    marginBottom: 24,
+    padding: 18,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  kickerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 8,
+  },
+  kicker: {
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
   },
   headerTitle: {
-    fontSize: 32,
-    fontWeight: "700",
-    letterSpacing: -0.5,
+    fontSize: 30,
+    fontWeight: "800",
+    letterSpacing: 0,
     marginBottom: 4,
   },
   headerSubtitle: {
-    fontSize: 16,
-    fontWeight: "400",
+    fontSize: 14,
+    fontWeight: "500",
+    maxWidth: 250,
   },
   avatar: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 18,
+    borderWidth: 2,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -372,7 +394,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#FFFFFF",
+    color: "#FBBF24",
   },
   emptyState: {
     alignItems: "center",

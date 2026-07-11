@@ -1,5 +1,5 @@
 import clubsData from '../../data/snhu_clubs_with_hashes.json';
-import { supabase } from '../../data/supabaseClient';
+import { isDemoMode, supabase } from '../../data/supabaseClient';
 import { listClubs } from '../services/clubsService';
 
 /**
@@ -7,6 +7,10 @@ import { listClubs } from '../services/clubsService';
  * Only runs once - checks if clubs already exist
  */
 export const seedClubsOnce = async (): Promise<void> => {
+  if (isDemoMode) {
+    return;
+  }
+
   try {
     // Check if clubs already exist in Supabase
     const existingClubs = await listClubs();

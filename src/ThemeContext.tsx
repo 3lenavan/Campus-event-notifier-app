@@ -4,27 +4,35 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 type ThemeMode = "light" | "dark";
 
 export const LightThemeColors = {
-  primary: "#1D4ED8", // SNHU blue
-  background: "#F0F7FF", // soft sky blue
+  primary: "#D97706",
+  secondary: "#FBBF24",
+  accent: "#111827",
+  honey: "#FDE68A",
+  nectar: "#FFF7D6",
+  background: "#FFF8E1",
   card: "#FFFFFF",
-  text: "#0B0C0E",
-  border: "#D6E4FF", // light blue border
-  safeArea: "#f9fafb",
-  subtitle: "#6b7280",
-  inputBackground: "#fff",
-  placeholderText: "#9aa0b6",
+  text: "#1F1300",
+  border: "#F2C94C",
+  safeArea: "#FFF8E1",
+  subtitle: "#7A5A18",
+  inputBackground: "#FFFCF2",
+  placeholderText: "#A9802B",
 };
 
 export const DarkThemeColors = {
-  primary: "#60a5fa",
-  background: "#0b0c0e",
-  card: "#111214",
-  text: "#e5e7eb",
-  border: "#1f2937",
-  safeArea: "#0b0c0e",
-  subtitle: "#9aa0a6",
-  inputBackground: "#0f1113",
-  placeholderText: "#6b7280",
+  primary: "#FBBF24",
+  secondary: "#D97706",
+  accent: "#FFF7D6",
+  honey: "#92400E",
+  nectar: "#261A05",
+  background: "#120D05",
+  card: "#211804",
+  text: "#FFF7D6",
+  border: "#5F420D",
+  safeArea: "#120D05",
+  subtitle: "#D6B25E",
+  inputBackground: "#2B2109",
+  placeholderText: "#A9802B",
 };
 
 interface ThemeContextType {
