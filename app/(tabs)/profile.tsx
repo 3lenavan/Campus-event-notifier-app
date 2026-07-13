@@ -12,7 +12,6 @@ import { getEventsByIds } from "../../src/services/eventsService";
 import EventCard from "../event-card";
 import { useFocusEffect } from "expo-router";
 import { useAppTheme, LightThemeColors } from "../../src/ThemeContext";
-import { HoneycombBackground } from "../../src/components";
 
 type ProfileEvent = {
   id: string;
@@ -140,24 +139,19 @@ const Profile = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      <HoneycombBackground />
       <ScrollView 
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
       {/* Header */}
-      <View style={[styles.headerSection, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
-        <View style={styles.kickerRow}>
-          <Ionicons name="person-circle-outline" size={16} color={colors.primary} />
-          <Text style={[styles.kicker, { color: colors.primary }]}>My Hive</Text>
-        </View>
+      <View style={styles.headerSection}>
         <Text style={[styles.header, { color: colors.text }]}>Profile</Text>
-        <Text style={[styles.subheader, { color: colors.subtitle }]}>Manage your account, clubs, and saved buzz.</Text>
+        <Text style={[styles.subheader, { color: colors.subtitle }]}>Manage your account and preferences</Text>
       </View>
 
       {/* Profile Card */}
       <View style={[styles.profileBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <View style={[styles.avatar, { backgroundColor: colors.accent, borderColor: colors.secondary }]}>
+        <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
           <Text style={styles.avatarText}>
             {profile?.name ? profile.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "?"}
           </Text>
@@ -169,7 +163,7 @@ const Profile = () => {
             <View style={styles.roleContainer}>
               <View style={[
                 styles.roleBadge,
-                { backgroundColor: profile.isAdmin ? colors.primary : (profile.role === 'member' ? '#10B981' : '#6B4E16') }
+                { backgroundColor: profile.isAdmin ? '#2563EB' : (profile.role === 'member' ? '#10B981' : '#6B7280') }
               ]}>
                 <Text style={styles.roleText}>
                   {profile.isAdmin ? 'Admin' : (profile.role === 'member' ? 'Club Member' : 'Student')}
@@ -186,7 +180,7 @@ const Profile = () => {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>My Events</Text>
           
           {/* Tab Selector */}
-          <View style={[styles.tabContainer, { backgroundColor: isDark ? colors.border : colors.nectar }]}>
+          <View style={[styles.tabContainer, { backgroundColor: isDark ? colors.border : "#F3F4F6" }]}>
             <TouchableOpacity
               style={[styles.tab, activeTab === 'liked' && [styles.activeTab, { backgroundColor: colors.card }]]}
               onPress={() => setActiveTab('liked')}
@@ -208,7 +202,7 @@ const Profile = () => {
               <Ionicons 
                 name={activeTab === 'favorited' ? "bookmark" : "bookmark-outline"} 
                 size={18} 
-                color={activeTab === 'favorited' ? colors.primary : colors.subtitle} 
+                color={activeTab === 'favorited' ? "#3B82F6" : colors.subtitle} 
               />
               <Text style={[styles.tabText, { color: colors.subtitle }, activeTab === 'favorited' && [styles.activeTabText, { color: colors.text }]]} numberOfLines={1}>
                 Saved ({favoritedEvents.length})
@@ -225,7 +219,7 @@ const Profile = () => {
                 color={activeTab === 'rsvped' ? "#10B981" : colors.subtitle} 
               />
               <Text style={[styles.tabText, { color: colors.subtitle }, activeTab === 'rsvped' && [styles.activeTabText, { color: colors.text }]]} numberOfLines={1}>
-                RSVPed ({rsvpedEvents.length})
+                RSVP&apos;d ({rsvpedEvents.length})
               </Text>
             </TouchableOpacity>
           </View>
@@ -290,7 +284,7 @@ const Profile = () => {
                 ) : (
                   <View style={styles.emptyState}>
                     <Ionicons name="calendar-outline" size={48} color={colors.subtitle} />
-                    <Text style={[styles.emptyText, { color: colors.text }]}>No RSVPed events yet</Text>
+                    <Text style={[styles.emptyText, { color: colors.text }]}>No RSVP&apos;d events yet</Text>
                     <Text style={[styles.emptySubtext, { color: colors.subtitle }]}>RSVP to events to see them here</Text>
                   </View>
                 )
@@ -366,27 +360,11 @@ const Profile = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   contentContainer: { padding: 20, paddingBottom: 120 },
-  headerSection: {
-    marginBottom: 24,
-    padding: 18,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  kickerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 8,
-  },
-  kicker: {
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase",
-  },
+  headerSection: { marginBottom: 24 },
   header: { 
-    fontSize: 30, 
-    fontWeight: "800",
-    letterSpacing: 0,
+    fontSize: 32, 
+    fontWeight: "700",
+    letterSpacing: -0.5,
     marginBottom: 4,
   },
   subheader: { 
@@ -396,11 +374,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 24,
-    borderRadius: 8,
+    borderRadius: 20,
     marginBottom: 24,
     borderWidth: 0.5,
-    shadowColor: "#4A2D00",
-    shadowOpacity: 0.08,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
@@ -408,12 +386,11 @@ const styles = StyleSheet.create({
   avatar: {
     width: 72,
     height: 72,
-    borderRadius: 18,
-    backgroundColor: "#111827",
+    borderRadius: 36,
+    backgroundColor: "#3B82F6",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 20,
-    borderWidth: 2,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -423,7 +400,7 @@ const styles = StyleSheet.create({
   avatarText: { 
     fontSize: 28, 
     fontWeight: "700", 
-    color: "#FBBF24",
+    color: "#FFFFFF",
   },
   info: { flexDirection: "column", flex: 1 },
   name: { 
@@ -439,12 +416,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   eventsSection: {
-    borderRadius: 8,
+    borderRadius: 20,
     borderWidth: 0.5,
     marginBottom: 24,
     padding: 20,
-    shadowColor: "#4A2D00",
-    shadowOpacity: 0.06,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
@@ -496,11 +473,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   settingsBox: {
-    borderRadius: 8,
+    borderRadius: 20,
     borderWidth: 0.5,
     marginBottom: 24,
-    shadowColor: "#4A2D00",
-    shadowOpacity: 0.06,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,

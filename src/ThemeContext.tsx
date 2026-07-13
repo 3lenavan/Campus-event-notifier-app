@@ -1,44 +1,37 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { buzzup } from "./theme/buzzup-theme";
 
 type ThemeMode = "light" | "dark";
 
 export const LightThemeColors = {
-  primary: "#D97706",
-  secondary: "#FBBF24",
-  accent: "#111827",
-  honey: "#FDE68A",
-  nectar: "#FFF7D6",
-  background: "#FFF8E1",
-  card: "#FFFFFF",
-  text: "#1F1300",
-  border: "#F2C94C",
-  safeArea: "#FFF8E1",
-  subtitle: "#7A5A18",
-  inputBackground: "#FFFCF2",
-  placeholderText: "#A9802B",
+  primary: buzzup.colors.primary,
+  background: buzzup.colors.background,
+  card: buzzup.colors.surface,
+  text: buzzup.colors.cocoa,
+  border: buzzup.colors.border,
+  safeArea: buzzup.colors.background,
+  subtitle: buzzup.colors.cocoaSoft,
+  inputBackground: buzzup.colors.surface,
+  placeholderText: "#9A8879",
 };
 
 export const DarkThemeColors = {
-  primary: "#FBBF24",
-  secondary: "#D97706",
-  accent: "#FFF7D6",
-  honey: "#92400E",
-  nectar: "#261A05",
-  background: "#120D05",
-  card: "#211804",
-  text: "#FFF7D6",
-  border: "#5F420D",
-  safeArea: "#120D05",
-  subtitle: "#D6B25E",
-  inputBackground: "#2B2109",
-  placeholderText: "#A9802B",
+  primary: "#60a5fa",
+  background: "#0b0c0e",
+  card: "#111214",
+  text: "#e5e7eb",
+  border: "#1f2937",
+  safeArea: "#0b0c0e",
+  subtitle: "#9aa0a6",
+  inputBackground: "#0f1113",
+  placeholderText: "#6b7280",
 };
 
 interface ThemeContextType {
   theme: ThemeMode;
   toggleTheme: () => void;
-  colors: typeof LightThemeColors;
+  colors: Record<keyof typeof LightThemeColors, string>;
   isDark: boolean;
 }
 

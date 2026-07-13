@@ -1,30 +1,23 @@
 import { Ionicons } from "@expo/vector-icons";
-import {
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { useAppTheme, LightThemeColors } from "../src/ThemeContext";
+import { Image, ImageSourcePropType, Pressable, Text, View } from "react-native";
+import { AvatarGroup } from "../src/components/buzzup-ui";
+import { buzzup } from "../src/theme/buzzup-theme";
+
+const fallbackImage = require("../assets/design/buzzup-mascot.png");
 
 export interface Event {
   id: string;
   title: string;
   description: string;
-
-  // Your original fields
   date?: string;
-  time: string;
-
-  // This is your ACTUAL date field from Supabase
   dateISO?: string;
-
+  time: string;
   location: string;
   category: string;
   attendees?: number;
   maxAttendees?: number;
   imageUrl?: string;
+  imageSource?: ImageSourcePropType;
   isUserAttending?: boolean;
 }
 
@@ -40,352 +33,72 @@ interface EventCardProps {
   compact?: boolean;
 }
 
-export function EventCard({
-  event,
-  onPress,
-  onLike,
-  onFavorite,
-  liked = false,
-  favorited = false,
-  likesCount,
-  compact = false,
-}: EventCardProps) {
-  const themeContext = useAppTheme();
-  const colors = themeContext?.colors || LightThemeColors;
+const categoryColor = (category: string) => {
+  const value = category.toLowerCase();
+  if (value.includes("music") || value.includes("club")) return buzzup.colors.blue;
+  if (value.includes("art")) return buzzup.colors.coral;
+  if (value.includes("sport") || value.includes("outdoor")) return buzzup.colors.green;
+  return buzzup.colors.blue;
+};
 
-  // ALWAYS USE dateISO when available
-  const getDisplayDate = () => {
-    const rawDate = event.dateISO || event.date;
-    if (!rawDate) return "No date";
-
-    const d = new Date(rawDate);
-    if (isNaN(d.getTime())) return "Invalid date";
-
-    return d.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      Academic: "#F59E0B",
-      Social: "#10B981",
-      Sports: "#EF4444",
-      Arts: "#8B5CF6",
-      Career: "#0EA5E9",
-      Other: "#6B4E16",
-    };
-    return colors[category] || colors["Other"];
-  };
+export function EventCard({ event, onPress, onRSVP, onLike, onFavorite, liked = false, favorited = false, compact = false }: EventCardProps) {
+  const rawDate = event.dateISO || event.date;
+  const date = rawDate ? new Date(rawDate) : null;
+  const displayDate = date && !Number.isNaN(date.getTime())
+    ? date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+    : "Date TBA";
 
   if (compact) {
     return (
-      <TouchableOpacity
-        style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-        onPress={() => onPress(event)}
-        activeOpacity={0.8}
-      >
-        <View style={styles.rowBetween}>
-          <Text style={[styles.compactTitle, { color: colors.text }]} numberOfLines={1}>
-            {event.title}
-          </Text>
-          <View
-            style={[
-              styles.badge,
-              { backgroundColor: getCategoryColor(event.category) },
-            ]}
-          >
-            <Text style={styles.badgeText}>{event.category}</Text>
-          </View>
-        </View>
-
-        <View style={styles.iconRow}>
-          <View style={styles.iconItem}>
-            <Ionicons
-              name="calendar-outline"
-              size={14}
-              color={colors.subtitle}
-              style={{ marginRight: 4 }}
-            />
-            <Text style={[styles.iconText, { color: colors.subtitle }]}>{getDisplayDate()}</Text>
-          </View>
-          <View style={styles.iconItem}>
-            <Ionicons
-              name="time-outline"
-              size={14}
-              color={colors.subtitle}
-              style={{ marginRight: 4 }}
-            />
-            <Text style={[styles.iconText, { color: colors.subtitle }]}>{event.time}</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+      <Pressable accessibilityRole="button" onPress={() => onPress(event)} style={({ pressed }) => ({ padding: 14, borderRadius: 14, backgroundColor: pressed ? buzzup.colors.surfaceMuted : buzzup.colors.surface, borderWidth: 1, borderColor: buzzup.colors.border, gap: 6 })}>
+        <Text numberOfLines={1} style={{ ...buzzup.type.title, fontSize: 15, color: buzzup.colors.cocoa }}>{event.title}</Text>
+        <Text style={{ ...buzzup.type.meta, color: buzzup.colors.cocoaSoft }}>{displayDate} · {event.time} · {event.location}</Text>
+      </Pressable>
     );
   }
 
   return (
-    <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Open ${event.title}`}
       onPress={() => onPress(event)}
-      activeOpacity={0.9}
+      style={({ pressed }) => ({ flex: 1, minWidth: 0, overflow: "hidden", borderRadius: buzzup.radius.lg, backgroundColor: buzzup.colors.surface, borderWidth: 1, borderColor: buzzup.colors.border, opacity: pressed ? 0.94 : 1, boxShadow: `0 7px 20px ${buzzup.colors.shadow}` })}
     >
-      <View style={styles.imageContainer}>
-        <Image
-          source={{
-            uri:
-              event.imageUrl ||
-              "https://via.placeholder.com/400x300.png?text=Event+Image",
-          }}
-          style={styles.image}
-          resizeMode="cover"
-        />
-
-        {(onLike || onFavorite) && (
-          <View style={styles.imageOverlay}>
-            {onLike && (
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={(e) => {
-                  e.stopPropagation?.();
-                  onLike(event.id);
-                }}
-              >
-                <Ionicons
-                  name={liked ? "heart" : "heart-outline"}
-                  size={24}
-                  color={liked ? "#EF4444" : "#FFFFFF"}
-                />
-              </TouchableOpacity>
-            )}
-          {onFavorite && (
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={(e) => {
-                  e.stopPropagation?.();
-                  onFavorite(event.id);
-                }}
-              >
-                <Ionicons
-                  name={favorited ? "bookmark" : "bookmark-outline"}
-                  size={24}
-                  color={favorited ? colors.secondary : "#FFFFFF"}
-                />
-              </TouchableOpacity>
-            )}
-          </View>
+      <View style={{ height: 190 }}>
+        <Image source={event.imageSource || (event.imageUrl ? { uri: event.imageUrl } : fallbackImage)} style={{ width: "100%", height: "100%" }} resizeMode="cover" accessibilityLabel={`${event.title} event image`} />
+        <View style={{ position: "absolute", left: 12, top: 12, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: categoryColor(event.category) }}>
+          <Text style={{ color: buzzup.colors.white, fontSize: 10, fontWeight: "800", textTransform: "uppercase" }}>{event.category || "EVENT"}</Text>
+        </View>
+        {onLike && (
+          <Pressable accessibilityLabel={liked ? "Unlike event" : "Like event"} onPress={(e) => { e.stopPropagation(); onLike(event.id); }} style={{ position: "absolute", right: 12, top: 12, width: 40, height: 40, borderRadius: 20, backgroundColor: buzzup.colors.surface, alignItems: "center", justifyContent: "center" }}>
+            <Ionicons name={liked ? "heart" : "heart-outline"} size={21} color={liked ? buzzup.colors.red : buzzup.colors.cocoa} />
+          </Pressable>
         )}
       </View>
-
-      <View style={[styles.cardContent, { backgroundColor: colors.card }]}>
-        <View style={styles.headerRow}>
-          <View style={styles.locationRow}>
-          <Ionicons name="location-outline" size={14} color={colors.primary} />
-            <Text style={[styles.locationText, { color: colors.subtitle }]}>{event.location}</Text>
-          </View>
-          {typeof likesCount === "number" && likesCount > 0 && (
-            <View style={styles.ratingRow}>
-              <Ionicons name="heart" size={14} color="#EF4444" />
-              <Text style={styles.ratingText}>{likesCount}</Text>
-            </View>
-          )}
+      <View style={{ padding: 16, gap: 10 }}>
+        <Text selectable numberOfLines={2} style={{ ...buzzup.type.title, color: buzzup.colors.cocoa }}>{event.title}</Text>
+        <View style={{ gap: 5 }}>
+          <Text style={{ ...buzzup.type.meta, color: buzzup.colors.cocoaSoft }}><Ionicons name="calendar-outline" size={13} />  {displayDate} · {event.time}</Text>
+          <Text numberOfLines={1} style={{ ...buzzup.type.meta, color: buzzup.colors.cocoaSoft }}><Ionicons name="location-outline" size={13} />  {event.location}</Text>
         </View>
-
-        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
-          {event.title}
-        </Text>
-
-        <Text style={[styles.description, { color: colors.subtitle }]} numberOfLines={2}>
-          {event.description}
-        </Text>
-
-        <View style={styles.metaRow}>
-          <View style={styles.metaItem}>
-            <Ionicons name="calendar-outline" size={16} color={colors.primary} />
-            <Text style={[styles.metaText, { color: colors.text }]}>{getDisplayDate()}</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={16} color={colors.primary} />
-            <Text style={[styles.metaText, { color: colors.text }]}>{event.time}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <AvatarGroup count={event.attendees || 0} />
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            {onFavorite && (
+              <Pressable accessibilityLabel={favorited ? "Unsave event" : "Save event"} onPress={(e) => { e.stopPropagation(); onFavorite(event.id); }} style={{ width: 40, height: 40, borderRadius: 12, borderWidth: 1, borderColor: buzzup.colors.border, alignItems: "center", justifyContent: "center" }}>
+                <Ionicons name={favorited ? "bookmark" : "bookmark-outline"} size={20} color={favorited ? buzzup.colors.blue : buzzup.colors.cocoa} />
+              </Pressable>
+            )}
+            {onRSVP && (
+              <Pressable accessibilityLabel={event.isUserAttending ? "Cancel RSVP" : "RSVP to event"} onPress={(e) => { e.stopPropagation(); onRSVP(event.id); }} style={{ minWidth: 76, height: 40, paddingHorizontal: 14, borderRadius: 12, backgroundColor: buzzup.colors.primary, alignItems: "center", justifyContent: "center" }}>
+                <Text style={{ color: buzzup.colors.cocoa, fontWeight: "900" }}>{event.isUserAttending ? "Going" : "RSVP"}</Text>
+              </Pressable>
+            )}
           </View>
         </View>
-
-        <TouchableOpacity
-          style={[styles.seeMoreButton, { backgroundColor: colors.primary }]}
-          onPress={() => onPress(event)}
-        >
-          <Text style={styles.seeMoreText}>See more</Text>
-          <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
-        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 8,
-    marginBottom: 24,
-    overflow: "hidden",
-    borderWidth: 0.5,
-    shadowColor: "#4A2D00",
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-
-  imageContainer: {
-    width: "100%",
-    height: 240,
-    position: "relative",
-  },
-
-  image: {
-    width: "100%",
-    height: "100%",
-  },
-
-  imageOverlay: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    flexDirection: "row",
-  },
-
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 10,
-  },
-
-  cardContent: {
-    padding: 18,
-  },
-
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  locationText: {
-    fontSize: 13,
-    marginLeft: 4,
-  },
-
-  ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-
-  ratingText: {
-    fontSize: 13,
-    color: "#EF4444",
-    marginLeft: 4,
-    fontWeight: "600",
-  },
-
-  title: {
-    fontSize: 23,
-    fontWeight: "800",
-    marginBottom: 8,
-  },
-
-  description: {
-    fontSize: 15,
-    marginBottom: 16,
-  },
-
-  metaRow: {
-    flexDirection: "row",
-    marginBottom: 20,
-  },
-
-  metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 20,
-  },
-
-  metaText: {
-    marginLeft: 6,
-    fontWeight: "500",
-  },
-
-  seeMoreButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: 8,
-  },
-
-  seeMoreText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-    marginRight: 8,
-  },
-
-  compactCard: {
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 0.5,
-  },
-
-  compactTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  iconRow: {
-    flexDirection: "row",
-    marginTop: 8,
-  },
-
-  iconItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 16,
-  },
-
-  iconText: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-
-  badge: {
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-
-  badgeText: {
-    fontSize: 12,
-    color: "#FFFFFF",
-    fontWeight: "600",
-  },
-
-  rowBetween: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-});
 
 export default EventCard;

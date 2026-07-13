@@ -1,902 +1,101 @@
-// Imports
 import { Ionicons } from "@expo/vector-icons";
-import * as FileSystem from "expo-file-system/legacy";
-import { EncodingType } from "expo-file-system/legacy";
-import * as Linking from "expo-linking";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import * as Sharing from "expo-sharing";
-import { onAuthStateChanged } from "firebase/auth";
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-import { useEffect, useState } from "react";
-import {
-  Alert,
-  Image,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { Club, getClubByIdSupabase } from "../data/dataLoader";
-import { auth, db } from "../src/lib/firebase";
-import { notifyRSVPConfirmation } from "../src/lib/notifications";
-import { listApprovedEvents, getEventById } from "../src/services/eventsService";
-import {
-  getEventLikeCount,
-  getEventsInteractions,
-  toggleFavorite as toggleFavoriteService,
-  toggleLike as toggleLikeService,
-  toggleRSVP as toggleRSVPService,
-  isEventRSVPd,
-} from "../src/services/interactionsService";
-import { useAppTheme, LightThemeColors } from "../src/ThemeContext";
-import { HoneycombBackground } from "../src/components";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Share, Text, useWindowDimensions, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { getClubByIdSupabase, Club } from "../data/dataLoader";
+import { AvatarGroup, BeeMascot, DesktopSidebar } from "../src/components/buzzup-ui";
+import { useAuthUser } from "../src/hooks/useAuthUser";
+import { getEventById } from "../src/services/eventsService";
+import { getEventsInteractions, toggleFavorite, toggleLike, toggleRSVP } from "../src/services/interactionsService";
+import { buzzup } from "../src/theme/buzzup-theme";
+import type { Event } from "../src/types";
+import { DemoEvent, getDemoEventById } from "../src/data/demo-events";
 
-// Event interface
-interface Event {
-  id: string;
-  title: string;
-  description: string;
+const fallbackImage = require("../assets/design/buzzup-mascot.png");
 
-  // ✅ Store full ISO string here now (ex: 2025-12-15T02:17:00.000Z)
-  date: string;
-
-  // Display time string (ex: 21:17)
-  time: string;
-
-  location: string;
-  category: string;
-  attendees: number;
-  maxAttendees?: number;
-  imageUrl?: string;
-  isUserAttending?: boolean;
-  organizer?: string;
-  fullDescription?: string;
-  status?: "pending" | "approved" | "rejected";
-}
-
-// Main Component
-export default function EventDetails() {
-  const router = useRouter();
+export default function EventDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const themeContext = useAppTheme();
-  const colors = themeContext?.colors || LightThemeColors;
-  const isDark = themeContext?.isDark || false;
-
-  // Event state
-  const [event, setEvent] = useState<Event | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [liked, setLiked] = useState(false);
-  const [favorited, setFavorited] = useState(false);
-  const [rsvped, setRsvped] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
+  const { width } = useWindowDimensions();
+  const desktop = width >= 1024;
+  const { user } = useAuthUser();
+  const [event, setEvent] = useState<Event | DemoEvent | null>(null);
   const [club, setClub] = useState<Club | null>(null);
+  const [liked, setLiked] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [going, setGoing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Track logged-in user
-  const [currentUser, setCurrentUser] = useState<any>(null);
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => setCurrentUser(user));
-    return () => unsubscribe();
-  }, []);
-
-  // Fetch event details
-  useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        setLoading(true);
-
-        // First try to get the event by ID directly
-        const foundEvent = await getEventById(id);
-
-        if (foundEvent) {
-          const eventDate = new Date(foundEvent.dateISO);
-
-          const eventData: Event = {
-            id: foundEvent.id,
-            title: foundEvent.title,
-            description: foundEvent.description,
-
-            // ✅ Keep ISO (prevents UTC date shift bugs)
-            date: foundEvent.dateISO,
-
-            // ✅ Time formatted from same ISO
-            time: eventDate.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-            }),
-
-            location: foundEvent.location,
-            category: "Club Event",
-            attendees: foundEvent.attendees || 0,
-            maxAttendees: undefined,
-            imageUrl: foundEvent.imageUrl,
-            isUserAttending: false,
-            organizer: undefined,
-            fullDescription: foundEvent.description,
-            status: foundEvent.status,
-          };
-
-          setEvent(eventData);
-
-          // Fetch club information
-          if (foundEvent.clubId) {
-            try {
-              const clubData = await getClubByIdSupabase(Number(foundEvent.clubId));
-              setClub(clubData);
-            } catch (error) {
-              console.error("Error fetching club:", error);
-            }
-          }
-
-          // Load RSVP status if user is logged in (only for approved events)
-          if (currentUser?.uid && foundEvent.status === "approved") {
-            const isRSVPd = await isEventRSVPd(currentUser.uid, foundEvent.id);
-            setRsvped(isRSVPd);
-            setEvent((prev) => (prev ? { ...prev, isUserAttending: isRSVPd } : prev));
-          }
-        } else {
-          // Fallback: Try approved events list (backward compatibility)
-          const approvedEvents = await listApprovedEvents();
-          const fallbackEvent = approvedEvents.find((e) => e.id === id);
-
-          if (fallbackEvent) {
-            const eventDate = new Date(fallbackEvent.dateISO);
-
-            const eventData: Event = {
-              id: fallbackEvent.id,
-              title: fallbackEvent.title,
-              description: fallbackEvent.description,
-
-              // ✅ Keep ISO
-              date: fallbackEvent.dateISO,
-
-              // ✅ Time from same ISO
-              time: eventDate.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              }),
-
-              location: fallbackEvent.location,
-              category: "Club Event",
-              attendees: fallbackEvent.attendees || 0,
-              maxAttendees: undefined,
-              imageUrl: fallbackEvent.imageUrl,
-              isUserAttending: false,
-              organizer: undefined,
-              fullDescription: fallbackEvent.description,
-              status: fallbackEvent.status,
-            };
-
-            setEvent(eventData);
-
-            if (fallbackEvent.clubId) {
-              try {
-                const clubData = await getClubByIdSupabase(Number(fallbackEvent.clubId));
-                setClub(clubData);
-              } catch (error) {
-                console.error("Error fetching club:", error);
-              }
-            }
-
-            if (currentUser?.uid) {
-              const isRSVPd = await isEventRSVPd(currentUser.uid, fallbackEvent.id);
-              setRsvped(isRSVPd);
-              setEvent((prev) => (prev ? { ...prev, isUserAttending: isRSVPd } : prev));
-            }
-          } else {
-            // Last fallback to Firestore if not found in Supabase
-            const docRef = doc(db, "events", id as string);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-              setEvent({ ...(docSnap.data() as Event), id: docSnap.id });
-            } else {
-              console.log("No such event!");
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching event:", error);
-      } finally {
-        setLoading(false);
+    let active = true;
+    (async () => {
+      if (!id) return;
+      const loaded = getDemoEventById(id) || await getEventById(id);
+      if (!active) return;
+      setEvent(loaded);
+      if (loaded?.clubId && !loaded.id.startsWith("demo-")) setClub(await getClubByIdSupabase(Number(loaded.clubId)));
+      if (loaded && user?.uid && !loaded.id.startsWith("demo-")) {
+        const state = await getEventsInteractions(user.uid, [loaded.id]);
+        if (active) { setLiked(state.likedEvents.has(loaded.id)); setSaved(state.favoritedEvents.has(loaded.id)); setGoing(state.rsvpedEvents.has(loaded.id)); }
       }
-    };
+      if (active) setLoading(false);
+    })();
+    return () => { active = false; };
+  }, [id, user?.uid]);
 
-    fetchEvent();
-  }, [id, currentUser?.uid]);
-
-  // Load like/favorite/RSVP status when event or user changes
-  useEffect(() => {
-    const loadInteractions = async () => {
-      if (!event?.id) return;
-
-      try {
-        if (currentUser?.uid) {
-          const interactions = await getEventsInteractions(currentUser.uid, [event.id]);
-          setLiked(interactions.likedEvents.has(event.id));
-          setFavorited(interactions.favoritedEvents.has(event.id));
-          setRsvped(interactions.rsvpedEvents.has(event.id));
-          setLikeCount(interactions.likeCounts[event.id] || 0);
-
-          setEvent((prev) =>
-            prev ? { ...prev, isUserAttending: interactions.rsvpedEvents.has(event.id) } : null
-          );
-        } else {
-          const count = await getEventLikeCount(event.id);
-          setLikeCount(count);
-          setLiked(false);
-          setFavorited(false);
-          setRsvped(false);
-        }
-      } catch (error) {
-        console.error("Error loading interactions:", error);
-      }
-    };
-
-    loadInteractions();
-  }, [event?.id, currentUser?.uid]);
-
-  // Handle like toggle
-  const handleToggleLike = async () => {
-    if (!currentUser) {
-      alert("Please log in to like events.");
-      return;
-    }
-
+  const withUser = () => { if (user?.uid) return user.uid; router.replace("/"); return null; };
+  const perform = async (action: "like" | "save" | "rsvp") => {
+    if (!event || busy) return;
+    const isDemo = event.id.startsWith("demo-");
+    const uid = isDemo ? "demo-user" : withUser(); if (!uid) return;
+    setBusy(true);
+    const previous = { liked, saved, going };
+    if (action === "like") setLiked(!liked); if (action === "save") setSaved(!saved); if (action === "rsvp") setGoing(!going);
     try {
-      const newLikedState = await toggleLikeService(currentUser.uid, event!.id);
-      setLiked(newLikedState);
-
-      const count = await getEventLikeCount(event!.id);
-      setLikeCount(count);
-    } catch (error) {
-      console.error("Error toggling like:", error);
-      alert("Failed to update like. Please try again.");
-    }
+      if (!isDemo && action === "like") await toggleLike(uid, event.id);
+      if (!isDemo && action === "save") await toggleFavorite(uid, event.id);
+      if (!isDemo && action === "rsvp") await toggleRSVP(uid, event.id);
+    } catch {
+      setLiked(previous.liked); setSaved(previous.saved); setGoing(previous.going);
+      Alert.alert("Something went wrong", "Please try that action again.");
+    } finally { setBusy(false); }
   };
+  const share = async () => { if (!event) return; await Share.share({ title: event.title, message: `${event.title}\n${formatDate(event.dateISO)} at ${event.location}\nShared from BuzzUp` }); };
 
-  // Handle favorite toggle
-  const handleToggleFavorite = async () => {
-    if (!currentUser) {
-      alert("Please log in to favorite events.");
-      return;
-    }
+  if (loading) return <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: buzzup.colors.background }}><ActivityIndicator color={buzzup.colors.primaryPressed} /></View>;
+  if (!event) return <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 12, backgroundColor: buzzup.colors.background }}><BeeMascot size={110} /><Text style={{ ...buzzup.type.h2, color: buzzup.colors.cocoa }}>Event not found</Text><Pressable onPress={() => router.replace("/(tabs)/home")}><Text style={{ color: buzzup.colors.green, fontWeight: "800" }}>Back to events</Text></Pressable></View>;
 
-    try {
-      const newFavoritedState = await toggleFavoriteService(currentUser.uid, event!.id);
-      setFavorited(newFavoritedState);
-    } catch (error) {
-      console.error("Error toggling favorite:", error);
-      alert("Failed to update favorite. Please try again.");
-    }
-  };
-
-  // Handle RSVP Toggle (simple, no email preference modal)
-  const handleRSVP = async (eventId: string, eventTitle: string) => {
-    try {
-      if (!currentUser) {
-        alert("Please log in to RSVP.");
-        return;
-      }
-
-      const newRSVPState = await toggleRSVPService(currentUser.uid, eventId);
-      setRsvped(newRSVPState);
-      setEvent((prev) => (prev ? { ...prev, isUserAttending: newRSVPState } : null));
-
-      if (newRSVPState) {
-        // RSVP'd successfully
-        try {
-          await notifyRSVPConfirmation(eventTitle);
-          await addDoc(collection(db, "notifications"), {
-            userId: currentUser.uid,
-            message: `You RSVP'd for ${eventTitle}!`,
-            timestamp: serverTimestamp(),
-            read: false,
-          });
-        } catch {}
-      } else {
-        // Canceled RSVP
-        alert(`RSVP canceled for "${eventTitle}"`);
-      }
-    } catch (error) {
-      console.error("Error toggling RSVP:", error);
-      alert("Something went wrong. Please try again.");
-    }
-  };
-
-  // Handle Add to Calendar
-  const handleAddToCalendar = async (event: Event) => {
-    try {
-      // ✅ event.date is ISO now, so just use it
-      const eventDateTime = new Date(event.date);
-
-      if (isNaN(eventDateTime.getTime())) {
-        throw new Error("Invalid event date/time");
-      }
-
-      // Format dates for ICS (YYYYMMDDTHHMMSSZ)
-      const formatICSDate = (date: Date): string => {
-        const year = date.getUTCFullYear();
-        const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-        const day = String(date.getUTCDate()).padStart(2, "0");
-        const hours = String(date.getUTCHours()).padStart(2, "0");
-        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-        const seconds = String(date.getUTCSeconds()).padStart(2, "0");
-        return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
-      };
-
-      const startTime = formatICSDate(eventDateTime);
-      const endTime = formatICSDate(new Date(eventDateTime.getTime() + 2 * 60 * 60 * 1000));
-
-      const uid = `event-${event.id}-${Date.now()}@campuseventnotifier.app`;
-
-      const escapeICS = (text: string): string => {
-        return text
-          .replace(/\\/g, "\\\\")
-          .replace(/;/g, "\\;")
-          .replace(/,/g, "\\,")
-          .replace(/\n/g, "\\n");
-      };
-
-      const icsContent = [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "PRODID:-//Campus Event Notifier//EN",
-        "CALSCALE:GREGORIAN",
-        "METHOD:PUBLISH",
-        "BEGIN:VEVENT",
-        `UID:${uid}`,
-        `DTSTART:${startTime}`,
-        `DTEND:${endTime}`,
-        `DTSTAMP:${formatICSDate(new Date())}`,
-        `SUMMARY:${escapeICS(event.title)}`,
-        `DESCRIPTION:${escapeICS(event.description || "")}\\n\\nLocation: ${escapeICS(event.location)}`,
-        `LOCATION:${escapeICS(event.location)}`,
-        "STATUS:CONFIRMED",
-        "TRANSP:OPAQUE",
-        "END:VEVENT",
-        "END:VCALENDAR",
-      ].join("\r\n");
-
-      if (Platform.OS === "web" && typeof document !== "undefined") {
-        const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${event.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.ics`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        alert("Calendar file downloaded successfully!");
-      } else {
-        const fileName = `${event.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.ics`;
-
-        const cacheDir = FileSystem.cacheDirectory;
-        const docDir = FileSystem.documentDirectory;
-        const directory = cacheDir || docDir;
-
-        if (directory) {
-          try {
-            const fileUri = `${directory}${directory.endsWith("/") ? "" : "/"}${fileName}`;
-
-            await FileSystem.writeAsStringAsync(fileUri, icsContent, {
-              encoding: EncodingType.UTF8,
-            });
-
-            const fileInfo = await FileSystem.getInfoAsync(fileUri);
-            if (!fileInfo.exists) {
-              throw new Error("File was not created successfully");
-            }
-
-            const isAvailable = await Sharing.isAvailableAsync();
-            if (isAvailable) {
-              await Sharing.shareAsync(fileUri, {
-                mimeType: "text/calendar",
-                dialogTitle: "Add to Calendar",
-                UTI: Platform.OS === "ios" ? "com.apple.ical.ics" : undefined,
-              });
-
-              setTimeout(() => {
-                if (Platform.OS === "ios") {
-                  Alert.alert(
-                    "How to Add to Calendar",
-                    'In the share menu:\n\n• Tap "Add to Calendar"\n• Or "Save to Files" then open it\n• Or email it to yourself',
-                    [{ text: "OK" }]
-                  );
-                } else {
-                  Alert.alert(
-                    "How to Add to Calendar",
-                    'In the share menu:\n\n• Tap "Google Calendar" if available\n• Or save the file then open it with your calendar app',
-                    [{ text: "OK" }]
-                  );
-                }
-              }, 500);
-
-              return;
-            }
-          } catch (fileError: any) {
-            console.error("Error with file system approach:", fileError);
-          }
-        }
-
-        try {
-          const dataUri = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
-
-          const canOpen = await Linking.canOpenURL(dataUri);
-          if (canOpen) {
-            await Linking.openURL(dataUri);
-            return;
-          }
-
-          alert(
-            `Calendar file ready!\n\nSince file system access is limited, please:\n1. Copy this link and open it in your browser\n2. Or use the share button\n\nTry a development build instead of Expo Go if needed.`
-          );
-
-          if (await Sharing.isAvailableAsync()) {
-            const tempContent = `To add this event to your calendar, copy and open:\n\n${dataUri}`;
-            const tempFileUri = `${FileSystem.cacheDirectory || FileSystem.documentDirectory || ""}calendar_instructions.txt`;
-
-            try {
-              if (FileSystem.cacheDirectory || FileSystem.documentDirectory) {
-                await FileSystem.writeAsStringAsync(tempFileUri, tempContent, {
-                  encoding: EncodingType.UTF8,
-                });
-                await Sharing.shareAsync(tempFileUri, {
-                  dialogTitle: "Calendar Event Instructions",
-                });
-              }
-            } catch (e) {
-              console.log("Data URI:", dataUri);
-            }
-          }
-        } catch (fallbackError: any) {
-          console.error("Error with data URI fallback:", fallbackError);
-          alert(
-            `Unable to create calendar file. Try a development build or web version. Error: ${
-              fallbackError?.message || fallbackError
-            }`
-          );
-        }
-      }
-    } catch (error: any) {
-      console.error("Error creating calendar file:", error);
-      alert(`Failed to create calendar file: ${error.message || "Please try again."}`);
-    }
-  };
-
-  if (loading) {
-    return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text }}>Loading event...</Text>
-      </View>
-    );
-  }
-
-  if (!event) {
-    return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <Text style={[styles.notFoundText, { color: colors.text }]}>Event not found</Text>
-        <TouchableOpacity
-          onPress={() => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace("/(tabs)/home");
-            }
-          }}
-          style={[styles.backButtonText, { backgroundColor: colors.primary }]}
-        >
-          <Text style={styles.backButtonTextLabel}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  // Helpers
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const isEventFull = event.maxAttendees && event.attendees >= event.maxAttendees;
-
-  // ✅ event.date is ISO now, so this comparison is correct
-  const isEventPast = new Date(event.date).getTime() < Date.now();
-
-  return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <HoneycombBackground />
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Hero Image */}
-        <View style={styles.heroContainer}>
-          <Image
-            source={{
-              uri: event.imageUrl || "https://via.placeholder.com/800x400.png?text=Event+Image",
-            }}
-            style={styles.heroImage}
-            resizeMode="cover"
-          />
-
-          {/* Header Overlay */}
-          <View style={styles.heroHeader}>
-            <TouchableOpacity
-              onPress={() => {
-                if (router.canGoBack()) {
-                  router.back();
-                } else {
-                  router.replace("/(tabs)/home");
-                }
-              }}
-              style={styles.backButton}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleToggleFavorite}
-              style={styles.heartButton}
-              disabled={!currentUser}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name={favorited ? "heart" : "heart-outline"}
-                size={24}
-                color={favorited ? "#EF4444" : "#FFFFFF"}
-              />
-            </TouchableOpacity>
-          </View>
+  const eventTime = new Date(event.dateISO).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const content = (
+    <ScrollView contentContainerStyle={{ paddingBottom: desktop ? 40 : 120, backgroundColor: buzzup.colors.background }}>
+      <View style={{ height: desktop ? 430 : 340, maxWidth: desktop ? 1050 : undefined, width: "100%", alignSelf: "center", overflow: "hidden", borderBottomLeftRadius: desktop ? 28 : 0, borderBottomRightRadius: desktop ? 28 : 0 }}>
+        <Image source={("imageSource" in event && event.imageSource) || (event.imageUrl ? { uri: event.imageUrl } : fallbackImage)} style={{ width: "100%", height: "100%" }} resizeMode="cover" accessibilityLabel={`${event.title} hero image`} />
+        <View style={{ position: "absolute", top: desktop ? 22 : 52, left: 18, right: 18, flexDirection: "row", justifyContent: "space-between" }}>
+          <Pressable accessibilityLabel="Go back" onPress={() => router.canGoBack() ? router.back() : router.replace("/(tabs)/home")} style={iconButton}><Ionicons name="chevron-back" size={24} color={buzzup.colors.cocoa} /></Pressable>
+          <View style={{ flexDirection: "row", gap: 10 }}><Pressable accessibilityLabel="Share event" onPress={share} style={iconButton}><Ionicons name="share-outline" size={22} color={buzzup.colors.cocoa} /></Pressable><Pressable accessibilityLabel={saved ? "Unsave event" : "Save event"} onPress={() => perform("save")} style={iconButton}><Ionicons name={saved ? "bookmark" : "bookmark-outline"} size={22} color={saved ? buzzup.colors.blue : buzzup.colors.cocoa} /></Pressable></View>
         </View>
-
-        {/* Content Section */}
-        <View style={[styles.contentSection, { backgroundColor: colors.background }]}>
-          <View style={[styles.detailPill, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
-            <Ionicons name="radio-outline" size={15} color={colors.primary} />
-            <Text style={[styles.detailPillText, { color: colors.primary }]}>Event Buzz</Text>
-          </View>
-          <Text style={[styles.title, { color: colors.text }]}>{event.title}</Text>
-
-          {club && (
-            <View style={styles.clubRow}>
-              <Ionicons name="people" size={16} color={colors.primary} />
-              <Text style={[styles.clubText, { color: colors.primary }]}>{club.name}</Text>
-            </View>
-          )}
-
-          <View style={styles.locationRow}>
-            <Ionicons name="location" size={16} color={colors.primary} />
-            <Text style={[styles.locationText, { color: colors.subtitle }]}>{event.location}</Text>
-          </View>
-
-          {likeCount > 0 && (
-            <View style={styles.ratingRow}>
-              <Ionicons name="heart" size={16} color="#EF4444" />
-              <Text style={[styles.ratingText, { color: "#EF4444" }]}>{likeCount}</Text>
-              <Text style={[styles.reviewsText, { color: colors.subtitle }]}>likes</Text>
-            </View>
-          )}
-
-          {/* Description */}
-          <View style={styles.descriptionSection}>
-            <Text style={[styles.description, { color: colors.subtitle }]} numberOfLines={undefined}>
-              {event.fullDescription || event.description}
-            </Text>
-          </View>
-
-          {/* Event Details */}
-          <View style={[styles.detailsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={styles.detailItem}>
-              <Ionicons name="calendar-outline" size={20} color={colors.subtitle} />
-              <View style={styles.detailContent}>
-                <Text style={[styles.detailLabel, { color: colors.subtitle }]}>Date</Text>
-                <Text style={[styles.detailValue, { color: colors.text }]}>{formatDate(event.date)}</Text>
-              </View>
-            </View>
-
-            <View style={styles.detailItem}>
-              <Ionicons name="time-outline" size={20} color={colors.subtitle} />
-              <View style={styles.detailContent}>
-                <Text style={[styles.detailLabel, { color: colors.subtitle }]}>Time</Text>
-                <Text style={[styles.detailValue, { color: colors.text }]}>{event.time}</Text>
-              </View>
-            </View>
-
-            <View style={styles.detailItem}>
-              <Ionicons name="people-outline" size={20} color={colors.subtitle} />
-              <View style={styles.detailContent}>
-                <Text style={[styles.detailLabel, { color: colors.subtitle }]}>Attendees</Text>
-                <Text style={[styles.detailValue, { color: colors.text }]}>
-                  {event.attendees} {event.maxAttendees && `/ ${event.maxAttendees} max`}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Action Buttons */}
-          <View style={styles.actionsCard}>
-            <TouchableOpacity
-              style={styles.likeButton}
-              onPress={handleToggleLike}
-              disabled={!currentUser}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name={liked ? "heart" : "heart-outline"}
-                size={22}
-                color={liked ? "#EF4444" : colors.subtitle}
-              />
-              <Text style={[styles.actionText, { color: colors.subtitle }, liked && styles.likedText]}>
-                {likeCount} {likeCount === 1 ? "like" : "likes"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* RSVP Button - Only show for approved events */}
-          {event.status && event.status !== "approved" ? (
-            <View
-              style={[
-                styles.primaryButton,
-                styles.disabledButton,
-                {
-                  backgroundColor: colors.border,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                },
-              ]}
-            >
-              <Ionicons name="time-outline" size={20} color={colors.subtitle} />
-              <Text style={[styles.primaryButtonText, { color: colors.subtitle, marginLeft: 8 }]}>
-                {event.status === "pending" ? "Event Pending Approval" : "Event Not Available"}
-              </Text>
-            </View>
-          ) : isEventPast ? (
-            <TouchableOpacity
-              style={[styles.primaryButton, styles.disabledButton, { backgroundColor: colors.border }]}
-              disabled
-            >
-              <Text style={styles.primaryButtonText}>Event has ended</Text>
-            </TouchableOpacity>
-          ) : isEventFull && !rsvped ? (
-            <TouchableOpacity
-              style={[styles.primaryButton, styles.disabledButton, { backgroundColor: colors.border }]}
-              disabled
-            >
-              <Text style={styles.primaryButtonText}>Event is full</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={[
-                styles.primaryButton,
-                { backgroundColor: rsvped ? colors.honey : colors.primary },
-              ]}
-              onPress={() => handleRSVP(event.id, event.title)}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.primaryButtonText, rsvped && { color: colors.text }]}>
-                {rsvped ? "Cancel RSVP" : "RSVP to Event"}
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Add to Calendar Button */}
-          <TouchableOpacity
-            style={[styles.secondaryButton, { backgroundColor: colors.card, borderColor: colors.border }]}
-            onPress={() => handleAddToCalendar(event)}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="calendar-outline" size={20} color={colors.text} />
-            <Text style={[styles.secondaryButtonText, { color: colors.text }]}>Add to Calendar</Text>
-          </TouchableOpacity>
+      </View>
+      <View style={{ maxWidth: 900, width: "100%", alignSelf: "center", marginTop: desktop ? 24 : -22, padding: desktop ? 28 : 20, gap: 20, borderTopLeftRadius: 28, borderTopRightRadius: 28, backgroundColor: buzzup.colors.background }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}><View style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: buzzup.colors.blue }}><Text style={{ color: "white", fontWeight: "800", fontSize: 11 }}>{("category" in event ? event.category : "Club Event").toUpperCase()}</Text></View><Pressable accessibilityLabel={liked ? "Unlike event" : "Like event"} onPress={() => perform("like")} style={iconButton}><Ionicons name={liked ? "heart" : "heart-outline"} size={23} color={liked ? buzzup.colors.red : buzzup.colors.cocoa} /></Pressable></View>
+        <Text selectable style={{ ...buzzup.type.display, color: buzzup.colors.cocoa }}>{event.title}</Text>
+        <View style={{ gap: 13 }}>
+          <Detail icon="calendar-outline" text={`${formatDate(event.dateISO)} · ${eventTime}`} />
+          <Detail icon="location-outline" text={event.location} />
+          <Detail icon="business-outline" text={club?.name || "Campus organization"} />
         </View>
-      </ScrollView>
-    </View>
+        <AvatarGroup count={event.attendees || 0} />
+        <Text selectable style={{ ...buzzup.type.body, color: buzzup.colors.cocoaSoft }}>{event.description}</Text>
+        <View style={{ minHeight: 135, padding: 18, borderRadius: 20, backgroundColor: buzzup.colors.surfaceMuted, flexDirection: "row", alignItems: "center" }}><View style={{ flex: 1 }}><Text style={{ ...buzzup.type.title, color: buzzup.colors.cocoa }}>Ready to join the buzz?</Text><Text style={{ ...buzzup.type.meta, color: buzzup.colors.cocoaSoft, marginTop: 6 }}>Save your spot and we’ll keep this event handy.</Text></View><BeeMascot size={110} /></View>
+        <Pressable disabled={busy || event.status !== "approved"} accessibilityLabel={going ? "Cancel RSVP" : "RSVP to event"} onPress={() => perform("rsvp")} style={({ pressed }) => ({ minHeight: 58, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: event.status !== "approved" ? buzzup.colors.border : pressed ? buzzup.colors.primaryPressed : buzzup.colors.primary, opacity: busy ? 0.7 : 1 })}><Text style={{ color: buzzup.colors.cocoa, fontSize: 17, fontWeight: "900" }}>{event.status !== "approved" ? "Event unavailable" : going ? "Cancel RSVP" : "RSVP — Free"}</Text></Pressable>
+      </View>
+    </ScrollView>
   );
+
+  if (desktop) return <View style={{ flex: 1, flexDirection: "row", backgroundColor: buzzup.colors.background }}><DesktopSidebar /><View style={{ flex: 1 }}>{content}</View></View>;
+  return <SafeAreaView style={{ flex: 1, backgroundColor: buzzup.colors.background }} edges={["bottom"]}>{content}<View style={{ position: "absolute", left: 0, right: 0, bottom: 0, minHeight: 74, paddingHorizontal: 22, paddingBottom: 10, flexDirection: "row", alignItems: "center", justifyContent: "space-around", backgroundColor: buzzup.colors.surface, borderTopWidth: 1, borderTopColor: buzzup.colors.border }}>{[["home", "Home", "/(tabs)/home"], ["compass", "Discover", "/(tabs)/discover"], ["add-circle-outline", "Create", "/(tabs)/create-event"], ["bookmark-outline", "Saved", "/(tabs)/saved"], ["person-outline", "Profile", "/(tabs)/profile"]].map(([icon, label, href]) => <Pressable key={label} onPress={() => router.push(href as any)} style={{ minWidth: 52, alignItems: "center", gap: 3 }}><Ionicons name={icon as any} size={22} color={buzzup.colors.cocoa} /><Text style={{ color: buzzup.colors.cocoa, fontSize: 10, fontWeight: "600" }}>{label}</Text></Pressable>)}</View></SafeAreaView>;
 }
 
-// Styles
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  scrollContent: { paddingBottom: 120 },
-  heroContainer: {
-    position: "relative",
-    width: "100%",
-    height: 320,
-  },
-  heroImage: {
-    width: "100%",
-    height: "100%",
-  },
-  heroHeader: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  heartButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  contentSection: {
-    padding: 20,
-  },
-  detailPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    gap: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginBottom: 12,
-  },
-  detailPillText: {
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase",
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "800",
-    marginBottom: 12,
-    letterSpacing: 0,
-    lineHeight: 38,
-  },
-  clubRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 12,
-  },
-  clubText: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 12,
-  },
-  locationText: {
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 20,
-  },
-  ratingText: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  reviewsText: {
-    fontSize: 15,
-  },
-  descriptionSection: {
-    marginBottom: 24,
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  detailsCard: {
-    borderRadius: 8,
-    padding: 20,
-    marginBottom: 24,
-    borderWidth: 1,
-  },
-  detailItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 20,
-    gap: 16,
-  },
-  detailContent: {
-    flex: 1,
-  },
-  detailLabel: {
-    fontSize: 13,
-    marginBottom: 4,
-    fontWeight: "500",
-  },
-  detailValue: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  actionsCard: {
-    marginBottom: 20,
-  },
-  likeButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 12,
-  },
-  actionText: {
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  likedText: {
-    color: "#EF4444",
-  },
-  primaryButton: {
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  primaryButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  cancelButtonStyle: {},
-  cancelButtonText: {},
-  disabledButton: {},
-  secondaryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
-    paddingVertical: 14,
-    gap: 8,
-    borderWidth: 1,
-  },
-  secondaryButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  notFoundText: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 16,
-  },
-  backButtonText: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-  },
-  backButtonTextLabel: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});
+const iconButton = { width: 44, height: 44, borderRadius: 15, backgroundColor: buzzup.colors.surface, alignItems: "center" as const, justifyContent: "center" as const, borderWidth: 1, borderColor: buzzup.colors.border };
+function Detail({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; text: string }) { return <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}><Ionicons name={icon} size={20} color={buzzup.colors.cocoaSoft} /><Text selectable style={{ ...buzzup.type.body, color: buzzup.colors.cocoaSoft }}>{text}</Text></View>; }
+function formatDate(value: string) { const date = new Date(value); return Number.isNaN(date.getTime()) ? "Date TBA" : date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }); }

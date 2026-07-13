@@ -1,21 +1,24 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useFonts } from "expo-font";
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { seedClubsOnce } from "../src/bootstrap/seedClubs";
 import { useAuthUser } from "../src/hooks/useAuthUser";
 import { initializeNotifications } from "../src/lib/notifications";
-import { ThemeProviderCustom, useAppTheme, LightThemeColors, DarkThemeColors } from "../src/ThemeContext";
+import { ThemeProviderCustom, useAppTheme, DarkThemeColors } from "../src/ThemeContext";
 
 const LightTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: LightThemeColors.primary,
-    background: LightThemeColors.background,
+    // BuzzUp (SNHU) kawaii palette: blue + yellow accents
+    primary: "#F7C928",
+    background: "#FFF9E8",
     card: "#FFFFFF",
-    text: LightThemeColors.text,
-    border: LightThemeColors.border,
+    text: "#3B2618",
+    border: "#E9D9B8",
   },
 };
 
@@ -23,16 +26,17 @@ const DarkThemeCustom = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    primary: DarkThemeColors.primary,
-    background: DarkThemeColors.background,
-    card: DarkThemeColors.card,
-    text: DarkThemeColors.text,
-    border: DarkThemeColors.border,
+    primary: "#60a5fa",
+    background: "#0b0c0e",
+    card: "#111214",
+    text: "#e5e7eb",
+    border: "#1f2937",
   },
 };
 
 function RootLayoutContent() {
-  const { theme, isDark } = useAppTheme();
+  const [iconsLoaded] = useFonts(Ionicons.font);
+  const { isDark } = useAppTheme();
   const navigationTheme = isDark ? DarkThemeCustom : LightTheme;
   const { user } = useAuthUser();
 
@@ -58,9 +62,11 @@ function RootLayoutContent() {
     }
   }, [user?.uid]);
 
+  if (!iconsLoaded) return null;
+
   return (
     <ThemeProvider value={navigationTheme}>
-      <StatusBar style={isDark ? "light" : "dark"} backgroundColor={isDark ? DarkThemeColors.background : LightThemeColors.background} />
+      <StatusBar style={isDark ? "light" : "dark"} backgroundColor={isDark ? DarkThemeColors.background : "#FFF9E8"} />
       <Stack
         screenOptions={{
           headerShown: false,

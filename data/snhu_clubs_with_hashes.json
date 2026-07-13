@@ -2,428 +2,306 @@
   {
     "id": "accounting_society",
     "name": "Accounting Society",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-accounting_society-2025",
-    "codeHash": "5e3ceae255f29b2adc1641375a78d7612d4dec1580fbf5fe2335a308dc5bf61a"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "american_institute_for_aeronautics_and_astronautics_aiaa",
     "name": "American Institute for Aeronautics and Astronautics (AIAA)",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-american_institute_for_aeronautics_and_astronautics_aiaa-2025",
-    "codeHash": "b1b14caf0603f53ee50858aa151bf4f2507c56cf5bf217b683531b0151d47110"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "american_marketing_association_ama",
     "name": "American Marketing Association (AMA)",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-american_marketing_association_ama-2025",
-    "codeHash": "f06186910a07e9893ff5cc62351381dcda3f04cff0a31d2a6bbbf9b4dbfb9882"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "american_society_for_mechanical_engineers_asme",
     "name": "American Society for Mechanical Engineers (ASME)",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-american_society_for_mechanical_engineers_asme-2025",
-    "codeHash": "62074ec1ba1272867f8b1dab73368fcffc5c53dd55102a62148bfd7f121246fe"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "association_for_supervision_and_curriculum_development_ascd",
     "name": "Association for Supervision & Curriculum Development (ASCD)",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-association_for_supervision_and_curriculum_development_ascd-2025",
-    "codeHash": "a1ad7a274f0f40b9399812aa0160ea2004f2a47f1524c49ebf5f93b711ef2800"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "aviation_club",
     "name": "Aviation Club",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-aviation_club-2025",
-    "codeHash": "78be764a67ad922647d65b8e8cf443f6be653a5b0defa16e648feaae76675073"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "biology_club",
     "name": "Biology Club",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-biology_club-2025",
-    "codeHash": "faa71214569de5a488b3dd1d25ff56eae75325a37e9e4be630207d6b2da9e384"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "computer_science_student_association_cssa",
     "name": "Computer Science Student Association (CSSA)",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-computer_science_student_association_cssa-2025",
-    "codeHash": "d0aa9cbfab85c5faf411330e4614f886d6bf0666cb76a43cf84dc44eadfc8fa3"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "construction_management_club",
     "name": "Construction Management Club",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-construction_management_club-2025",
-    "codeHash": "90f6a3021625e5a6e5ab61edc5d173b008bfdc657e2fdd443e9b18b655f804"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "deca",
     "name": "DECA",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-deca-2025",
-    "codeHash": "1bec61ff6690be964321657a3cf56c7e6da74cefd5dbdd4032419ac88c3ea0d373"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "economic_and_finance_association",
     "name": "Economic & Finance Association",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-economic_and_finance_association-2025",
-    "codeHash": "4a93d84b6f2e58796cd66c9ca9289af28b1b67b5fc5df925878ae936b157404a"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "environmental_club",
     "name": "Environmental Club",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-environmental_club-2025",
-    "codeHash": "c852c8ffc408bf446d9a225fd1a0ecd3b2fb58220e98b2f0d586dd300154a625"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "game_design_and_development_club",
     "name": "Game Design and Development Club",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-game_design_and_development_club-2025",
-    "codeHash": "90b343317872e3f62f575ec6f1c475fafed431d2fe76aced2d2b07c9b5a434ec"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "justice_studies_association",
     "name": "Justice Studies Association",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-justice_studies_association-2025",
-    "codeHash": "33cf3bf3b96ec07b1d58d0632cf46f548b1a7664cb4f94191393fcfb99b5e23e"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "math_club",
     "name": "Math Club",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-math_club-2025",
-    "codeHash": "0c818657a90c1aab5bdc104a0bda5fd40e454c80e65042bcf375862b74a8c26b"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "media_and_design_club",
     "name": "Media and Design Club",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-media_and_design_club-2025",
-    "codeHash": "9b40a8fd8870d9fd6c1c23edf0531bb30af47ede99f4090bcbeceed09eb58842"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "omep_early_childhood_educators",
     "name": "OMEP - Early Childhood Educators",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-omep_early_childhood_educators-2025",
-    "codeHash": "4ec225b784524b52debbb5f7f7e735a3b7794a3560ca93a3c085103566da6735"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "professional_sales_association",
     "name": "Professional Sales Association",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-professional_sales_association-2025",
-    "codeHash": "c4a28d7967151247d39b2b2880274a47afaeec1832181d920d358b5fab365a90"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "psychology_student_association",
     "name": "Psychology Student Association",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-psychology_student_association-2025",
-    "codeHash": "1da250a84bfed50356e7bc52b9fa521552d2ea4bfb04604fdcc330ccafbadb86"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "robotics_club",
     "name": "Robotics Club",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-robotics_club-2025",
-    "codeHash": "55735dfb05a45593dc24d1ac91483d605dbb5604a9ee9e89e0e719a590cb8f3d"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "sport_management",
     "name": "Sport Management",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-sport_management-2025",
-    "codeHash": "1b1b4e2312759c33ce68b78dd26da3046e6482410447169b18f5eb2905d0a16f"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "steam_team",
     "name": "STEAM Team",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-steam_team-2025",
-    "codeHash": "85211b42f9aca2487877b245a4270b0aa5d82eb95877558200ad72878b33c423"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "women_in_business",
     "name": "Women in Business",
-    "category": "Academic & Educational Organizations",
-    "verificationCode": "SNHU-ACAD-women_in_business-2025",
-    "codeHash": "9b41d688b3e2e61c07fac71d3289cd264fa65056b34e57fc5fcf585b04faccfc"
+    "category": "Academic & Educational Organizations"
   },
   {
     "id": "snhu_buddies",
     "name": "SNHU Buddies",
-    "category": "Community Service Organizations",
-    "verificationCode": "SNHU-CSRV-snhu_buddies-2025",
-    "codeHash": "547540fcf8ef88e2eaa7666b27ba536b54398c4de233cb87ef92e5fe3163bffb"
+    "category": "Community Service Organizations"
   },
   {
     "id": "kappa_delta_phi_fraternity",
     "name": "Kappa Delta Phi Fraternity",
-    "category": "Greek Organizations",
-    "verificationCode": "SNHU-GREEK-kappa_delta_phi_fraternity-2025",
-    "codeHash": "6b239fdb7707c4600656f3cfaf063ccc46685125a095d2aef66fb7210e583041"
+    "category": "Greek Organizations"
   },
   {
     "id": "kappa_delta_phi_nationally_affiliated_sorority",
     "name": "Kappa Delta Phi, Nationally Affiliated Sorority",
-    "category": "Greek Organizations",
-    "verificationCode": "SNHU-GREEK-kappa_delta_phi_nationally_affiliated_sorority-2025",
-    "codeHash": "29172f9b625db8dc3667b4ab13fbae847e0265d584f37650e9efc60d480590b4"
+    "category": "Greek Organizations"
   },
   {
     "id": "phi_delta_theta_fraternity",
     "name": "Phi Delta Theta Fraternity",
-    "category": "Greek Organizations",
-    "verificationCode": "SNHU-GREEK-phi_delta_theta_fraternity-2025",
-    "codeHash": "5d4cda94867fed608d11669d639f6db3b73d9441845e9b4f20a477ebd3370190"
+    "category": "Greek Organizations"
   },
   {
     "id": "phi_omega_psi_sorority",
     "name": "Phi Omega Psi Sorority",
-    "category": "Greek Organizations",
-    "verificationCode": "SNHU-GREEK-phi_omega_psi_sorority-2025",
-    "codeHash": "d4ab813d5404cdc629a313b12e1ecf532bbb05dae8a10b0eff15236765dd59c5"
+    "category": "Greek Organizations"
   },
   {
     "id": "theta_phi_alpha_sorority",
     "name": "Theta Phi Alpha Sorority",
-    "category": "Greek Organizations",
-    "verificationCode": "SNHU-GREEK-theta_phi_alpha_sorority-2025",
-    "codeHash": "52b9891f38a5064797b1516c1d15f3746cc7f8035019e5e35d9ece936833669c"
+    "category": "Greek Organizations"
   },
   {
     "id": "drama_club",
     "name": "Drama Club",
-    "category": "Media & Performing Arts Organizations",
-    "verificationCode": "SNHU-MEDIA-drama_club-2025",
-    "codeHash": "3d5b4cca29006f15ef78ac0b5b5c32d880f04e5c9fa48f72039b6ccaf59dd000"
+    "category": "Media & Performing Arts Organizations"
   },
   {
     "id": "penmen_press",
     "name": "Penmen Press (Student Newspaper)",
-    "category": "Media & Performing Arts Organizations",
-    "verificationCode": "SNHU-MEDIA-penmen_press-2025",
-    "codeHash": "5e90bbabe44268a30a15f921adca470cb195d9fc8237d851c13f574903a32cc5"
+    "category": "Media & Performing Arts Organizations"
   },
   {
     "id": "radiosnhu",
     "name": "RadioSNHU",
-    "category": "Media & Performing Arts Organizations",
-    "verificationCode": "SNHU-MEDIA-radiosnhu-2025",
-    "codeHash": "d59cf4173487a89d14abba2bfdde8e44c37a36b4cf1735ed1cc9acbf825a3fed"
+    "category": "Media & Performing Arts Organizations"
   },
   {
     "id": "black_student_union_bsu",
     "name": "Black Student Union (BSU)",
-    "category": "Multicultural & Spiritual Life Organizations",
-    "verificationCode": "SNHU-MULTI-black_student_union_bsu-2025",
-    "codeHash": "bc942335a5c3f78d4c0610e941120df7b66dba8f2ec7ed727864469eb47d4177"
+    "category": "Multicultural & Spiritual Life Organizations"
   },
   {
     "id": "generation_equality",
     "name": "Generation Equality",
-    "category": "Multicultural & Spiritual Life Organizations",
-    "verificationCode": "SNHU-MULTI-generation_equality-2025",
-    "codeHash": "bcba51f288a4fafde1231eb6d3333f5b0bd84b9d9725956ed29019099da8d68a"
+    "category": "Multicultural & Spiritual Life Organizations"
   },
   {
     "id": "international_student_association_isa",
     "name": "International Student Association (ISA)",
-    "category": "Multicultural & Spiritual Life Organizations",
-    "verificationCode": "SNHU-MULTI-international_student_association_isa-2025",
-    "codeHash": "72be12d2aee02fea6bd359ac693a7887b065b887d54fb68a782b30ea4b53bb9c"
+    "category": "Multicultural & Spiritual Life Organizations"
   },
   {
     "id": "intervarsity_christian_fellowship",
     "name": "Intervarsity Christian Fellowship",
-    "category": "Multicultural & Spiritual Life Organizations",
-    "verificationCode": "SNHU-MULTI-intervarsity_christian_fellowship-2025",
-    "codeHash": "38bbdc6b0b2c0e2759b5b462941313966dab7466bd3ae279a81398f16b29d1e7"
+    "category": "Multicultural & Spiritual Life Organizations"
   },
   {
     "id": "south_asian_student_association",
     "name": "South Asian Student Association",
-    "category": "Multicultural & Spiritual Life Organizations",
-    "verificationCode": "SNHU-MULTI-south_asian_student_association-2025",
-    "codeHash": "f3d9f00f1635b95e0cfd55890664637159be0c0558ed63c0c0214b8427a3a7ba"
+    "category": "Multicultural & Spiritual Life Organizations"
   },
   {
     "id": "crafty_creations_club",
     "name": "Crafty Creations Club",
-    "category": "Special Interest Organizations",
-    "verificationCode": "SNHU-SPEC-crafty_creations_club-2025",
-    "codeHash": "cd8b1721d07738cc1871eca18db886049dbfa619404e413544bf6a673133ef01"
+    "category": "Special Interest Organizations"
   },
   {
     "id": "creative_writing_club",
     "name": "Creative Writing Club",
-    "category": "Special Interest Organizations",
-    "verificationCode": "SNHU-SPEC-creative_writing_club-2025",
-    "codeHash": "9f59bd1cb95850a9415a2d2c4ff026a1e5f61163bc4e68e1a02f918257cb87ea"
+    "category": "Special Interest Organizations"
   },
   {
     "id": "drama_club_special_interest",
     "name": "DRAMA Club",
-    "category": "Special Interest Organizations",
-    "verificationCode": "SNHU-SPEC-drama_club_special_interest-2025",
-    "codeHash": "9dd4a071cc9689a4f58974fd428a0f48b32efdcc18e7e97d57665c380104e573"
+    "category": "Special Interest Organizations"
   },
   {
     "id": "esports_club",
     "name": "eSports Club",
-    "category": "Special Interest Organizations",
-    "verificationCode": "SNHU-SPEC-esports_club-2025",
-    "codeHash": "a6f4cced5ba294368b71fcedfef92a671ab94150685d46e491b59a83873f0068"
+    "category": "Special Interest Organizations"
   },
   {
     "id": "film_and_photography_club",
     "name": "Film and Photography Club",
-    "category": "Special Interest Organizations",
-    "verificationCode": "SNHU-SPEC-film_and_photography_club-2025",
-    "codeHash": "192145ec61f9df31969bfc2cd7ed94f94c0ab539092bbdbbd49de8c0b0614447"
+    "category": "Special Interest Organizations"
   },
   {
     "id": "gaming_club",
     "name": "Gaming Club",
-    "category": "Special Interest Organizations",
-    "verificationCode": "SNHU-SPEC-gaming_club-2025",
-    "codeHash": "c2de9dbe5647fbb46ecde3dfc935b59322bce9bc366a1ef3875c0da7022784af"
+    "category": "Special Interest Organizations"
   },
   {
     "id": "gearheads",
     "name": "GearHeads",
-    "category": "Special Interest Organizations",
-    "verificationCode": "SNHU-SPEC-gearheads-2025",
-    "codeHash": "dd72402e44a25976dac49a820e87be162f4b4299fb1993a9f3c3bf325b00bb6c"
+    "category": "Special Interest Organizations"
   },
   {
     "id": "outing_club",
     "name": "Outing Club",
-    "category": "Special Interest Organizations",
-    "verificationCode": "SNHU-SPEC-outing_club-2025",
-    "codeHash": "6f6763355485c8425ee7c0ef17cc9caee55d8cfe62c55c1db4b2780e77bce3b2"
+    "category": "Special Interest Organizations"
   },
   {
     "id": "pottery_club",
     "name": "Pottery Club",
-    "category": "Special Interest Organizations",
-    "verificationCode": "SNHU-SPEC-pottery_club-2025",
-    "codeHash": "79497524b01015bd8e876902efbfef0905caa5cffcd5b07a1561ac769b55408a"
+    "category": "Special Interest Organizations"
   },
   {
     "id": "cape",
     "name": "Coordinators of Activities and Programming Events (CAPE)",
-    "category": "Student Governance Organizations",
-    "verificationCode": "SNHU-GOV-cape-2025",
-    "codeHash": "cffa68f00feb2a93e872d22659383266fa38fb74948482036c10c0629a324029"
+    "category": "Student Governance Organizations"
   },
   {
     "id": "igc",
     "name": "Inter-Greek Council (IGC)",
-    "category": "Student Governance Organizations",
-    "verificationCode": "SNHU-GOV-igc-2025",
-    "codeHash": "a0265af5cdd21d26e947053a11eda79756dcf783f3bac130b734e510cefa720f"
+    "category": "Student Governance Organizations"
   },
   {
     "id": "sga",
     "name": "Student Government Association (SGA)",
-    "category": "Student Governance Organizations",
-    "verificationCode": "SNHU-GOV-sga-2025",
-    "codeHash": "e759e50ac8761d2cb3ea54566ca7632c983163c65d7cbb4da6e817998a1a6ba1"
+    "category": "Student Governance Organizations"
   },
   {
     "id": "senior_events",
     "name": "Senior Events",
-    "category": "University Supported Student Groups",
-    "verificationCode": "SNHU-UNIV-senior_events-2025",
-    "codeHash": "50eb056bc1b3f5169eaa8712a4a03056bab6fc1ef32165986e91429e43126169"
+    "category": "University Supported Student Groups"
   },
   {
     "id": "alpha_chi_epsilon_chapter_liberal_arts",
     "name": "Alpha Chi/Epsilon Chapter (Liberal Arts)",
-    "category": "Honor Societies",
-    "verificationCode": "SNHU-HONOR-alpha_chi_epsilon_chapter_liberal_arts-2025",
-    "codeHash": "7e82d9d7e1c4544a7c76b86ad9b3892aefa6c2ab2884c9b7dd27e0d54387f131"
+    "category": "Honor Societies"
   },
   {
     "id": "alpha_phi_sigma_criminal_justice",
     "name": "Alpha Phi Sigma (Criminal Justice)",
-    "category": "Honor Societies",
-    "verificationCode": "SNHU-HONOR-alpha_phi_sigma_criminal_justice-2025",
-    "codeHash": "cc0c4f45e5d1ade9910def2a70399a8ab4dff34924511a2b5bea945c5e024452"
+    "category": "Honor Societies"
   },
   {
     "id": "alpha_sigma_lambda_continuing_education",
     "name": "Alpha Sigma Lambda (Continuing Education)",
-    "category": "Honor Societies",
-    "verificationCode": "SNHU-HONOR-alpha_sigma_lambda_continuing_education-2025",
-    "codeHash": "15f90789cd6b76e46fdd4a11917b88e22b042d31146c1537ac9bca65397b37fa"
+    "category": "Honor Societies"
   },
   {
     "id": "chi_alpha_sigma_honor_society_athlete",
     "name": "Chi Alpha Sigma (Honor Society Athlete)",
-    "category": "Honor Societies",
-    "verificationCode": "SNHU-HONOR-chi_alpha_sigma_honor_society_athlete-2025",
-    "codeHash": "6ac9bc14d74c54f986cc346fa0671fad89ebb9fa841218b19697026dc765bd7a"
+    "category": "Honor Societies"
   },
   {
     "id": "delta_mu_delta_business_related_majors",
     "name": "Delta Mu Delta (Business-Related Majors)",
-    "category": "Honor Societies",
-    "verificationCode": "SNHU-HONOR-delta_mu_delta_business_related_majors-2025",
-    "codeHash": "9ccfecb6103b9957ba0382c04276bcb1aa6e1372f11b5840808d0a611fdf33c4"
+    "category": "Honor Societies"
   },
   {
     "id": "order_of_omega_greek_leadership_honor_society",
     "name": "Order of Omega (Greek Leadership Honor Society)",
-    "category": "Honor Societies",
-    "verificationCode": "SNHU-HONOR-order_of_omega_greek_leadership_honor_society-2025",
-    "codeHash": "a4e162038b5a97248486a61bb416385fc86367107aaa22da5b3c6e5dc705a509"
+    "category": "Honor Societies"
   },
   {
     "id": "pi_lambda_theta_education",
     "name": "Pi Lambda Theta (Education)",
-    "category": "Honor Societies",
-    "verificationCode": "SNHU-HONOR-pi_lambda_theta_education-2025",
-    "codeHash": "77bb4cefc97d8eee2ae31480ebaa9df935f0f99aed91566fe83ef30e7a77f49f"
+    "category": "Honor Societies"
   },
   {
     "id": "pi_mu_epsilon_math",
     "name": "Pi Mu Epsilon (Math)",
-    "category": "Honor Societies",
-    "verificationCode": "SNHU-HONOR-pi_mu_epsilon_math-2025",
-    "codeHash": "50e3ba6381d6bfd260ceb3f9fcdaf571c22514bd7678fee7ac174ef6297edfe6"
+    "category": "Honor Societies"
   },
   {
     "id": "psi_chi_psychology_honor_society",
     "name": "Psi Chi (Psychology Honor Society)",
-    "category": "Honor Societies",
-    "verificationCode": "SNHU-HONOR-psi_chi_psychology_honor_society-2025",
-    "codeHash": "3368fca96a466f86061bd0c2cab4709db0c2b4022a4dd1608df7849f3a8ba3cc"
+    "category": "Honor Societies"
   },
   {
     "id": "sigma_gamma_tau_mechanical_engineering",
     "name": "Sigma Gamma Tau (Mechanical Engineering)",
-    "category": "Honor Societies",
-    "verificationCode": "SNHU-HONOR-sigma_gamma_tau_mechanical_engineering-2025",
-    "codeHash": "6286281340fbeff623ad55b73b4c5e0395471e07e52a63d1ce833b83b0c6d6b6"
+    "category": "Honor Societies"
   },
   {
     "id": "sigma_tau_delta_english",
     "name": "Sigma Tau Delta (English)",
-    "category": "Honor Societies",
-    "verificationCode": "SNHU-HONOR-sigma_tau_delta_english-2025",
-    "codeHash": "d355e2d497534ad26319b7a8d8434f1ea23ee34ad4d0e7c411afea3ab6b72251"
+    "category": "Honor Societies"
   }
 ]
