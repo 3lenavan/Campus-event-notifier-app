@@ -1,9 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  AccessibilityInfo,
+  Animated,
   Pressable,
   Image,
+  Platform,
   ScrollView,
   StyleProp,
   Text,
@@ -13,7 +16,7 @@ import {
 } from "react-native";
 import { buzzup } from "../theme/buzzup-theme";
 
-const mascot = require("../../assets/design/buzzup-mascot.png");
+const mascot = require("../../assets/images/buzzup-mascot.png");
 
 export function BuzzUpLogo({ compact = false }: { compact?: boolean }) {
   return (
@@ -25,11 +28,47 @@ export function BuzzUpLogo({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export function BeeMascot({ size = 120, style }: { size?: number; style?: StyleProp<ViewStyle> }) {
+export function BuzzUpBrandLogo({ compact = false }: { compact?: boolean }) {
+  const fontSize = compact ? 27 : 38;
   return (
-    <View style={[{ width: size, height: size, borderRadius: size / 2, overflow: "hidden" }, style]}>
-      <Image source={mascot} style={{ width: size, height: size }} resizeMode="cover" accessibilityLabel="BuzzUp bee mascot holding a megaphone" />
+    <View accessibilityLabel="BuzzUp" style={{ flexDirection: "row", alignItems: "center" }}>
+      <Text style={{ color: buzzup.colors.cocoa, fontSize, lineHeight: fontSize + 5, fontWeight: "900", letterSpacing: -1.8 }}>Buzz</Text>
+      <Text style={{ color: buzzup.colors.primary, fontSize, lineHeight: fontSize + 5, fontWeight: "900", letterSpacing: -1.8 }}>Up</Text>
+      <Ionicons name="sparkles" color={buzzup.colors.primary} size={compact ? 14 : 18} style={{ marginLeft: 4 }} />
     </View>
+  );
+}
+
+export function BeeMascot({ size = 120, style, animated = false }: { size?: number; style?: StyleProp<ViewStyle>; animated?: boolean }) {
+  const float = useRef(new Animated.Value(0)).current;
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
+    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduceMotion);
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(() => {
+    if (!animated || reduceMotion) {
+      float.stopAnimation();
+      float.setValue(0);
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(float, { toValue: -7, duration: 1800, useNativeDriver: Platform.OS !== "web" }),
+        Animated.timing(float, { toValue: 0, duration: 1800, useNativeDriver: Platform.OS !== "web" }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [animated, float, reduceMotion]);
+
+  return (
+    <Animated.View style={[{ width: size, height: size, transform: [{ translateY: float }] }, style]}>
+      <Image source={mascot} style={{ width: size, height: size }} resizeMode="contain" accessibilityLabel="BuzzUp bee mascot holding a megaphone" />
+    </Animated.View>
   );
 }
 
@@ -130,7 +169,7 @@ export function DesktopSidebar() {
   return (
     <View style={{ width: 250, minHeight: "100%", padding: 24, backgroundColor: buzzup.colors.surface, borderRightWidth: 1, borderRightColor: buzzup.colors.border, justifyContent: "space-between" }}>
       <View style={{ gap: 28 }}>
-        <BuzzUpLogo />
+        <BuzzUpBrandLogo />
         <View style={{ gap: 8 }} accessibilityLabel="Desktop navigation">
           {navItems.map(([label, icon, href]) => {
             const active = pathname.includes(href.split("/").pop() || "home");

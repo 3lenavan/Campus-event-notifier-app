@@ -14,7 +14,10 @@ import {
 } from "../../src/services/interactionsService";
 import EventCard, { Event as BaseEvent } from "../event-card";
 import { useAppTheme, LightThemeColors } from "../../src/ThemeContext";
-import { BuzzUpMascot, HoneycombBackground } from "../../src/components";
+import { HoneycombBackground } from "../../src/components";
+import { BeeMascot, BuzzUpBrandLogo } from "../../src/components/buzzup-ui";
+import { DesktopHomeDashboard } from "../../src/components/DesktopHomeDashboard";
+import { Club } from "../../src/types";
 
 type FeedEvent = BaseEvent & {
   likes: number;
@@ -33,7 +36,7 @@ export default function HomeScreen() {
   const colors = themeContext?.colors || LightThemeColors;
   const isDark = themeContext?.isDark || false;
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 900;
+  const isDesktop = width >= 1024;
 
   useEffect(() => {
     const unsub = getAuth().onAuthStateChanged((user) => {
@@ -45,6 +48,7 @@ export default function HomeScreen() {
   }, []);
 
   const [events, setEvents] = useState<FeedEvent[]>([]);
+  const [clubs, setClubs] = useState<Club[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadApproved = useCallback(
@@ -53,7 +57,8 @@ export default function HomeScreen() {
         console.log("🔄 Loading approved events...", { forceRefresh });
         const approved = await listApprovedEvents(forceRefresh);
         console.log("📋 Loaded events:", approved.length, approved);
-        const clubs = await listClubs();
+        const clubList = await listClubs();
+        setClubs(clubList);
 
         // Get current date/time to filter out past events
         const now = new Date();
@@ -121,7 +126,7 @@ export default function HomeScreen() {
 
               club: {
                 id: event.clubId,
-                name: clubs.find((c: any) => c.id === event.clubId)?.name || "Unknown Club",
+                name: clubList.find((c: any) => c.id === event.clubId)?.name || "Unknown Club",
               },
             };
           })
@@ -294,6 +299,22 @@ export default function HomeScreen() {
     return `Hello, ${firstName}`;
   };
 
+  const firstName = (profile?.name || user?.displayName || "Friend").split(" ")[0];
+
+  if (isDesktop) {
+    return (
+      <DesktopHomeDashboard
+        events={events}
+        clubs={clubs}
+        firstName={firstName}
+        onPressEvent={onPressEvent}
+        onRSVP={toggleRSVP}
+        onLike={toggleLike}
+        onFavorite={toggleFavorite}
+      />
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top"]}>
       <HoneycombBackground />
@@ -306,7 +327,7 @@ export default function HomeScreen() {
         ListHeaderComponent={
           <View style={[styles.header, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
             <View style={styles.headerTopRow}>
-              <Text style={[styles.brandName, { color: colors.text }]}>Buzz<Text style={{ color: colors.secondary }}>Up</Text></Text>
+              <BuzzUpBrandLogo compact />
               {user && (
                 <View style={[styles.avatar, { backgroundColor: colors.accent, borderColor: colors.secondary }]}>
                   <Text style={styles.avatarText}>
@@ -316,7 +337,7 @@ export default function HomeScreen() {
               )}
             </View>
             <View style={[styles.heroRow, isDesktop && styles.desktopHeroRow]}>
-              <BuzzUpMascot size={isDesktop ? 190 : 132} style={styles.heroMascot} />
+              <BeeMascot size={132} animated style={styles.heroMascot} />
               <View style={styles.heroCopy}>
                 <View style={styles.kickerRow}>
                   <Ionicons name="radio-outline" size={16} color={colors.primary} />
@@ -328,6 +349,7 @@ export default function HomeScreen() {
             </View>
           </View>
         }
+        ItemSeparatorComponent={() => <View style={styles.eventSeparator} />}
         renderItem={({ item }) => (
           <EventCard
             event={item}
@@ -448,4 +470,5 @@ const styles = StyleSheet.create({
   emptySubtext: {
     fontSize: 14,
   },
+  eventSeparator: { height: 18 },
 });

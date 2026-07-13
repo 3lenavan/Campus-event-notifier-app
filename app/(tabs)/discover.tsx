@@ -115,7 +115,7 @@ export default function Discover() {
       </View>
 
       {/* Search Bar */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
+      <View style={[styles.searchContainer, isDesktop && styles.desktopSearch, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
         <Ionicons
           name="search-outline"
           size={20}
@@ -141,7 +141,7 @@ export default function Discover() {
 
       {/* Club List */}
       <ScrollView 
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, isDesktop && styles.desktopScrollContent]}
         showsVerticalScrollIndicator={false}
       >
         {filteredClubs.length === 0 ? (
@@ -155,7 +155,7 @@ export default function Discover() {
             <TouchableOpacity
               key={club.id}
               activeOpacity={0.9}
-              style={[styles.clubCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              style={[styles.clubCard, isDesktop && styles.desktopClubCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               onPress={() =>
                 router.push({
                   pathname: "/clubs/[id]" as any,
@@ -275,6 +275,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
+  desktopSearch: { width: "100%", maxWidth: 1140, alignSelf: "center" },
   input: {
     flex: 1,
     fontSize: 15,
@@ -291,6 +292,7 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
     alignItems: 'stretch',
   },
+  desktopScrollContent: { width: "100%", maxWidth: 1180, alignSelf: "center", flexDirection: "row", flexWrap: "wrap", gap: 20 },
   emptyState: { 
     alignItems: "center", 
     marginTop: 80,
@@ -316,6 +318,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     borderWidth: 0.5,
   },
+  desktopClubCard: { width: "31.7%", marginBottom: 4 },
   imageContainer: {
     position: "relative",
     width: "100%",

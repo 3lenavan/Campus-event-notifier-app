@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import { BottomTabBar } from "@react-navigation/bottom-tabs";
 import { Tabs } from "expo-router";
 import { Platform, useWindowDimensions } from "react-native";
+import { DesktopSidebar } from "../../src/components/buzzup-ui";
 import { useAppTheme, LightThemeColors } from "../../src/ThemeContext";
 
 export default function Layout() {
@@ -12,11 +14,13 @@ export default function Layout() {
 
   return (
     <Tabs
+      tabBar={(props) => desktop ? <DesktopSidebar /> : <BottomTabBar {...props} />}
       screenOptions={{
+        tabBarPosition: desktop ? "left" : "bottom",
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: "#3B2618",
         tabBarStyle: {
-          display: desktop ? "none" : "flex",
+          width: desktop ? 250 : undefined,
           backgroundColor: colors.card,
           borderTopWidth: 0.5,
           borderTopColor: colors.border,
