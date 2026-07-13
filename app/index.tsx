@@ -2,8 +2,7 @@ import { router } from "expo-router";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { HoneycombBackground } from "../src/components";
+import { BuzzUpMascot, HoneycombBackground } from "../src/components";
 import { auth } from "../src/lib/firebase";
 import { useAppTheme, LightThemeColors } from "../src/ThemeContext";
 
@@ -118,9 +117,7 @@ export default function Index() {
       <View style={styles.container}>
         <HoneycombBackground variant="dense" />
         <View style={[styles.card, styles.glassCard, { backgroundColor: isDark ? colors.card : 'rgba(255, 252, 242, 0.94)', borderColor: colors.border }]}> 
-          <View style={[styles.mark, { backgroundColor: colors.accent }]}>
-            <Ionicons name="radio-outline" size={28} color={colors.secondary} />
-          </View>
+          <BuzzUpMascot size={132} style={styles.loginMascot} />
           <Text style={[styles.appName, { color: colors.text }]}>BuzzUp</Text>
           <Text style={[styles.tagline, { color: colors.primary }]}>Campus events from the hive</Text>
           <Text style={[styles.subtitle, { color: colors.subtitle }]}>Sign in to catch the next campus buzz.</Text>
@@ -199,13 +196,10 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "700",
   },
-  mark: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 14,
+  loginMascot: {
+    alignSelf: "center",
+    marginTop: -34,
+    marginBottom: -10,
   },
   appName: { fontSize: 36, fontWeight: "800" },
   tagline: { fontSize: 15, fontWeight: "700", marginTop: 2 },

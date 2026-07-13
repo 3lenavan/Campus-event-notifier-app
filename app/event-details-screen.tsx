@@ -37,7 +37,7 @@ import {
   isEventRSVPd,
 } from "../src/services/interactionsService";
 import { useAppTheme, LightThemeColors } from "../src/ThemeContext";
-import { HoneycombBackground } from "../src/components";
+import { BuzzUpMascot, HoneycombBackground } from "../src/components";
 
 // Event interface
 interface Event {
@@ -593,9 +593,12 @@ export default function EventDetails() {
 
           {/* Description */}
           <View style={styles.descriptionSection}>
-            <Text style={[styles.description, { color: colors.subtitle }]} numberOfLines={undefined}>
-              {event.fullDescription || event.description}
-            </Text>
+            <View style={styles.descriptionRow}>
+              <Text style={[styles.description, { color: colors.subtitle }]} numberOfLines={undefined}>
+                {event.fullDescription || event.description}
+              </Text>
+              <BuzzUpMascot size={142} style={styles.detailMascot} />
+            </View>
           </View>
 
           {/* Event Details */}
@@ -813,9 +816,19 @@ const styles = StyleSheet.create({
   descriptionSection: {
     marginBottom: 24,
   },
+  descriptionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   description: {
+    flex: 1,
     fontSize: 16,
     lineHeight: 24,
+  },
+  detailMascot: {
+    marginRight: -14,
+    marginVertical: -18,
   },
   detailsCard: {
     borderRadius: 8,

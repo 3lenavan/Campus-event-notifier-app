@@ -2,7 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getAuth } from "firebase/auth";
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthUser } from "../../src/hooks/useAuthUser";
 import { listApprovedEvents } from "../../src/services/eventsService";
@@ -14,7 +14,7 @@ import {
 } from "../../src/services/interactionsService";
 import EventCard, { Event as BaseEvent } from "../event-card";
 import { useAppTheme, LightThemeColors } from "../../src/ThemeContext";
-import { HoneycombBackground } from "../../src/components";
+import { BuzzUpMascot, HoneycombBackground } from "../../src/components";
 
 type FeedEvent = BaseEvent & {
   likes: number;
@@ -32,6 +32,8 @@ export default function HomeScreen() {
   const themeContext = useAppTheme();
   const colors = themeContext?.colors || LightThemeColors;
   const isDark = themeContext?.isDark || false;
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 900;
 
   useEffect(() => {
     const unsub = getAuth().onAuthStateChanged((user) => {
@@ -298,26 +300,32 @@ export default function HomeScreen() {
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, isDesktop && styles.desktopListContent]}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         ListHeaderComponent={
           <View style={[styles.header, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
-            <View>
-              <View style={styles.kickerRow}>
-                <Ionicons name="radio-outline" size={16} color={colors.primary} />
-                <Text style={[styles.kicker, { color: colors.primary }]}>Hive Feed</Text>
-              </View>
-              <Text style={[styles.headerTitle, { color: colors.text }]}>{getUserGreeting()}</Text>
-              <Text style={[styles.headerSubtitle, { color: colors.subtitle }]}>Fresh campus buzz, sorted by what is coming up next.</Text>
+            <View style={styles.headerTopRow}>
+              <Text style={[styles.brandName, { color: colors.text }]}>Buzz<Text style={{ color: colors.secondary }}>Up</Text></Text>
+              {user && (
+                <View style={[styles.avatar, { backgroundColor: colors.accent, borderColor: colors.secondary }]}>
+                  <Text style={styles.avatarText}>
+                    {(profile?.name || user?.displayName || user?.email || "?")[0].toUpperCase()}
+                  </Text>
+                </View>
+              )}
             </View>
-            {user && (
-              <View style={[styles.avatar, { backgroundColor: colors.accent, borderColor: colors.secondary }]}>
-                <Text style={styles.avatarText}>
-                  {(profile?.name || user?.displayName || user?.email || "?")[0].toUpperCase()}
-                </Text>
+            <View style={[styles.heroRow, isDesktop && styles.desktopHeroRow]}>
+              <BuzzUpMascot size={isDesktop ? 190 : 132} style={styles.heroMascot} />
+              <View style={styles.heroCopy}>
+                <View style={styles.kickerRow}>
+                  <Ionicons name="radio-outline" size={16} color={colors.primary} />
+                  <Text style={[styles.kicker, { color: colors.primary }]}>Hive Feed</Text>
+                </View>
+                <Text style={[styles.headerTitle, isDesktop && styles.desktopHeaderTitle, { color: colors.text }]}>{getUserGreeting()}!</Text>
+                <Text style={[styles.headerSubtitle, isDesktop && styles.desktopHeaderSubtitle, { color: colors.subtitle }]}>Fresh campus buzz, sorted by what is coming up next.</Text>
               </View>
-            )}
+            </View>
           </View>
         }
         renderItem={({ item }) => (
@@ -346,15 +354,44 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   listContent: { paddingHorizontal: 20, paddingBottom: 120, alignItems: "stretch" },
+  desktopListContent: { width: "100%", maxWidth: 1180, alignSelf: "center" },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
     marginTop: 8,
     marginBottom: 24,
     padding: 18,
     borderRadius: 8,
     borderWidth: 1,
+    overflow: "hidden",
+  },
+  headerTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  brandName: {
+    fontSize: 28,
+    fontWeight: "900",
+    letterSpacing: -1,
+  },
+  heroRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: -8,
+    marginBottom: -12,
+  },
+  desktopHeroRow: {
+    justifyContent: "center",
+    marginTop: -18,
+    marginBottom: -18,
+  },
+  heroMascot: {
+    marginLeft: -18,
+    marginRight: 4,
+  },
+  heroCopy: {
+    flex: 1,
+    maxWidth: 650,
   },
   kickerRow: {
     flexDirection: "row",
@@ -378,6 +415,8 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     maxWidth: 250,
   },
+  desktopHeaderTitle: { fontSize: 42, lineHeight: 48 },
+  desktopHeaderSubtitle: { maxWidth: 520, fontSize: 16 },
   avatar: {
     width: 56,
     height: 56,

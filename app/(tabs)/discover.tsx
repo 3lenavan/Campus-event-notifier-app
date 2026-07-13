@@ -8,13 +8,14 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getClubs, Club } from "../../data/dataLoader";
 import { getClubEventCount } from "../../src/services/eventsService";
 import { useAppTheme, LightThemeColors } from "../../src/ThemeContext";
-import { HoneycombBackground } from "../../src/components";
+import { BuzzUpMascot, HoneycombBackground } from "../../src/components";
 
 export default function Discover() {
   const router = useRouter();
@@ -25,6 +26,8 @@ export default function Discover() {
   const themeContext = useAppTheme();
   const colors = themeContext?.colors || LightThemeColors;
   const isDark = themeContext?.isDark || false;
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 900;
 
   // Load club data from Supabase when screen mounts
   useEffect(() => {
@@ -99,8 +102,8 @@ export default function Discover() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <HoneycombBackground />
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
-        <View>
+      <View style={[styles.header, isDesktop && styles.desktopHeader, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
+        <View style={styles.headerCopy}>
           <View style={styles.kickerRow}>
             <Ionicons name="search-outline" size={16} color={colors.primary} />
             <Text style={[styles.kicker, { color: colors.primary }]}>Explore Cells</Text>
@@ -108,6 +111,7 @@ export default function Discover() {
           <Text style={[styles.headerTitle, { color: colors.text }]}>Discover</Text>
           <Text style={[styles.headerSubtitle, { color: colors.subtitle }]}>Find clubs, groups, and the next event cluster.</Text>
         </View>
+        <BuzzUpMascot size={isDesktop ? 124 : 88} style={styles.headerMascot} />
       </View>
 
       {/* Search Bar */}
@@ -213,13 +217,20 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginTop: 8,
     marginBottom: 16,
     marginHorizontal: 20,
     padding: 18,
     borderRadius: 8,
     borderWidth: 1,
+    overflow: "hidden",
   },
+  desktopHeader: { width: "100%", maxWidth: 1140, alignSelf: "center" },
+  headerCopy: { flex: 1 },
+  headerMascot: { marginVertical: -22, marginRight: -6 },
   kickerRow: {
     flexDirection: "row",
     alignItems: "center",
