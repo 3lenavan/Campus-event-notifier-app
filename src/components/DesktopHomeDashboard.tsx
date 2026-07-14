@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import EventCard, { Event as CardEvent } from "../../app/event-card";
 import { Club } from "../types";
 import { buzzup } from "../theme/buzzup-theme";
@@ -27,6 +27,8 @@ const filters = ["All", "Today", "This Week", "Clubs", "Sports", "Arts"];
 const fallbackClubImage = require("../../assets/images/buzzup-mascot.png");
 
 export function DesktopHomeDashboard({ events, clubs, firstName, onPressEvent, onRSVP, onLike, onFavorite }: Props) {
+  const { width } = useWindowDimensions();
+  const showRightRail = width >= 1280;
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
 
@@ -85,7 +87,7 @@ export function DesktopHomeDashboard({ events, clubs, firstName, onPressEvent, o
         {filteredEvents.length ? (
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 20 }}>
             {filteredEvents.map((event) => (
-              <View key={event.id} style={{ width: "48.5%", minWidth: 300, marginBottom: 2 }}>
+              <View key={event.id} style={{ width: "48.5%", flexBasis: "47%", marginBottom: 2 }}>
                 <EventCard event={event} onPress={onPressEvent} onRSVP={onRSVP} onLike={onLike} onFavorite={onFavorite} liked={event.liked} favorited={event.favorited} likesCount={event.likes} />
               </View>
             ))}
@@ -99,7 +101,7 @@ export function DesktopHomeDashboard({ events, clubs, firstName, onPressEvent, o
         )}
       </ScrollView>
 
-      <ScrollView style={{ width: 350, borderLeftWidth: 1, borderLeftColor: buzzup.colors.border }} contentContainerStyle={{ padding: 24, gap: 18, paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
+      {showRightRail && <ScrollView style={{ width: 350, borderLeftWidth: 1, borderLeftColor: buzzup.colors.border }} contentContainerStyle={{ padding: 24, gap: 18, paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
         <View style={{ minHeight: 226, overflow: "hidden", borderRadius: buzzup.radius.lg, padding: 22, backgroundColor: "#FFE179", borderWidth: 1, borderColor: buzzup.colors.primaryPressed }}>
           <Text style={{ ...buzzup.type.h1, color: buzzup.colors.cocoa, maxWidth: 165 }}>Never miss the buzz!</Text>
           <Text style={{ ...buzzup.type.meta, color: buzzup.colors.cocoaSoft, maxWidth: 165, marginTop: 8 }}>Follow clubs and RSVP to stay updated on the events you love.</Text>
@@ -139,7 +141,7 @@ export function DesktopHomeDashboard({ events, clubs, firstName, onPressEvent, o
             </Pressable>
           ))}
         </View>
-      </ScrollView>
+      </ScrollView>}
     </View>
   );
 }

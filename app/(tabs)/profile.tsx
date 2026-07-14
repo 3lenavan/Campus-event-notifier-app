@@ -9,6 +9,12 @@ import { listClubs } from "../../src/services/clubsService";
 import { Club, Event } from "../../src/types";
 import { getUserLikedEvents, getUserFavoritedEvents, getUserRSVPdEvents } from "../../src/services/interactionsService";
 import { getEventsByIds } from "../../src/services/eventsService";
+import {
+  cancelAllReminders,
+  getNotificationPermissionStatus,
+  requestNotificationPermission,
+  syncRemindersForUser,
+} from "../../src/services/notificationsService";
 import EventCard from "../event-card";
 import { useFocusEffect } from "expo-router";
 import { useAppTheme, LightThemeColors } from "../../src/ThemeContext";
@@ -52,6 +58,28 @@ const Profile = () => {
 
     loadClubs();
   }, []);
+
+  useEffect(() => {
+    getNotificationPermissionStatus().then((status) => setNotificationsEnabled(status === 'granted'));
+  }, []);
+
+  const handleToggleNotifications = async (value: boolean) => {
+    if (value) {
+      const status = await requestNotificationPermission();
+      setNotificationsEnabled(status === 'granted');
+      if (status === 'granted' && user?.uid) {
+        await syncRemindersForUser(user.uid);
+      } else if (status !== 'granted') {
+        Alert.alert(
+          'Notifications disabled',
+          'Enable notifications for this app in your device settings to get event reminders.'
+        );
+      }
+    } else {
+      setNotificationsEnabled(false);
+      await cancelAllReminders();
+    }
+  };
 
   const loadUserEvents = useCallback(async () => {
     if (!user?.uid) {
@@ -301,7 +329,7 @@ const Profile = () => {
           <Text style={[styles.rowTitle, { color: colors.text }]}>Push Notifications</Text>
           <Switch
             value={notificationsEnabled}
-            onValueChange={setNotificationsEnabled}
+            onValueChange={handleToggleNotifications}
           />
         </View>
 

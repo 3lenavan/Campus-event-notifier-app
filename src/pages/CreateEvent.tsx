@@ -19,8 +19,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { isDemoMode, supabase } from "../../data/supabaseClient";
 import { useAuthUser } from '../hooks/useAuthUser';
+import { checkPersonalConflicts } from '../lib/eventConflicts';
+import { getDefaultDenylist, validateEventInput } from '../lib/eventValidators';
 import { listClubs } from '../services/clubsService';
-import { createEvent } from '../services/eventsService';
+import { createEvent, getEventsByIds } from '../services/eventsService';
+import { getUserRSVPdEvents } from '../services/interactionsService';
 import { Club } from '../types';
 import { useAppTheme, LightThemeColors } from '../ThemeContext';
 import { HoneycombBackground } from '../components';
@@ -184,6 +187,7 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [conflictWarnings, setConflictWarnings] = useState<string[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
@@ -389,6 +393,35 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
       return;
     }
 
+    const candidateInput = {
+      title: title.trim(),
+      description: description.trim(),
+      clubId: selectedClubId,
+      dateISO: eventDate.toISOString(),
+      location: location.trim(),
+      ...(selectedImageBase64 ? { image: selectedImageBase64 } : {}),
+    };
+
+    const policyCheck = await validateEventInput(candidateInput, user.uid, getDefaultDenylist());
+    if (!policyCheck.ok) {
+      setValidationErrors(policyCheck.errors);
+      return;
+    }
+
+    setValidationErrors([]);
+
+    try {
+      const rsvpedIds = await getUserRSVPdEvents(user.uid);
+      const rsvpedEvents = rsvpedIds.length ? await getEventsByIds(rsvpedIds) : [];
+      const conflicts = checkPersonalConflicts(
+        { id: '', title: candidateInput.title, dateISO: candidateInput.dateISO },
+        rsvpedEvents
+      );
+      setConflictWarnings(conflicts.map((conflict) => conflict.message));
+    } catch (error) {
+      console.error('Error checking schedule conflicts:', error);
+    }
+
     setLoading(true);
     let imageUrl: string | undefined = undefined;
 
@@ -433,6 +466,7 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
       setSelectedImageUri(null);
       setSelectedImageBase64(null);
       setValidationErrors([]);
+      setConflictWarnings([]);
 
       // Show success message and navigate
       const message = newEvent.status === 'approved' 
@@ -768,6 +802,17 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
               {validationErrors.map((error, idx) => (
                 <Text key={idx} style={styles.errorText}>
                   • {error}
+                </Text>
+              ))}
+            </View>
+          )}
+
+          {/* Schedule conflict warnings (informational only, doesn't block submission) */}
+          {conflictWarnings.length > 0 && (
+            <View style={[styles.errorContainer, { backgroundColor: isDark ? '#78350F' : '#FEF3C7' }]}>
+              {conflictWarnings.map((warning, idx) => (
+                <Text key={idx} style={[styles.errorText, { color: isDark ? '#FDE68A' : '#92400E' }]}>
+                  ⚠ {warning}
                 </Text>
               ))}
             </View>

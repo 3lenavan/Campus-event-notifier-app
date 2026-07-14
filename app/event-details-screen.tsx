@@ -26,7 +26,11 @@ import {
 } from "react-native";
 import { Club, getClubByIdSupabase } from "../data/dataLoader";
 import { auth, db } from "../src/lib/firebase";
-import { notifyRSVPConfirmation } from "../src/lib/notifications";
+import {
+  cancelEventReminders,
+  notifyRSVPConfirmation,
+  scheduleEventReminders,
+} from "../src/services/notificationsService";
 import { listApprovedEvents, getEventById } from "../src/services/eventsService";
 import {
   getEventLikeCount,
@@ -296,6 +300,14 @@ export default function EventDetails() {
         // RSVP'd successfully
         try {
           await notifyRSVPConfirmation(eventTitle);
+          if (event) {
+            await scheduleEventReminders({
+              id: eventId,
+              title: eventTitle,
+              dateISO: event.date,
+              location: event.location,
+            });
+          }
           await addDoc(collection(db, "notifications"), {
             userId: currentUser.uid,
             message: `You RSVP'd for ${eventTitle}!`,
@@ -305,6 +317,7 @@ export default function EventDetails() {
         } catch {}
       } else {
         // Canceled RSVP
+        await cancelEventReminders(eventId).catch(() => {});
         alert(`RSVP canceled for "${eventTitle}"`);
       }
     } catch (error) {

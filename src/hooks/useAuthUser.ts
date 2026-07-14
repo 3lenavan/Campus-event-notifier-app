@@ -1,8 +1,8 @@
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { useCallback, useEffect, useState } from 'react';
 import { auth } from '../lib/firebase';
-import { initializeNotifications } from '../lib/notifications';
 import { getProfile, upsertProfileFromAuth } from '../services/profileService';
+import { syncRemindersForUser } from '../services/notificationsService';
 import { UserProfile } from '../types';
 
 interface AuthState {
@@ -61,11 +61,11 @@ export const useAuthUser = (): AuthState => {
           // User is signed in - create or update local profile
           await loadProfile(firebaseUser);
           setUser(firebaseUser);
-          // Initialize notifications after login
+          // Sync event reminder notifications after login
           try {
-            await initializeNotifications(firebaseUser.uid);
+            await syncRemindersForUser(firebaseUser.uid);
           } catch (e) {
-            console.error('Failed to initialize notifications', e);
+            console.error('Failed to sync notification reminders', e);
           }
         } else {
           // User is signed out

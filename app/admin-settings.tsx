@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuthUser } from '../src/hooks/useAuthUser';
 import { EventPolicy, getEventPolicy, setEventPolicy } from '../src/lib/eventPolicy';
-import { notifyApprovalUpdate } from '../src/lib/notifications';
+import { notifyApprovalUpdate } from '../src/services/notificationsService';
 import { listClubs, updateClubCodes } from '../src/services/clubsService';
 import { approveEvent, listEvents, rejectEvent } from '../src/services/eventsService';
 import { Club, Event } from '../src/types';

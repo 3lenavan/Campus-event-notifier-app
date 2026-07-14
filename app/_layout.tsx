@@ -6,7 +6,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { seedClubsOnce } from "../src/bootstrap/seedClubs";
 import { useAuthUser } from "../src/hooks/useAuthUser";
-import { initializeNotifications } from "../src/lib/notifications";
 import { ThemeProviderCustom, useAppTheme, DarkThemeColors } from "../src/ThemeContext";
 
 const LightTheme = {
@@ -38,7 +37,7 @@ function RootLayoutContent() {
   const [iconsLoaded] = useFonts(Ionicons.font);
   const { isDark } = useAppTheme();
   const navigationTheme = isDark ? DarkThemeCustom : LightTheme;
-  const { user } = useAuthUser();
+  useAuthUser();
 
   // Initialize app data on startup
   useEffect(() => {
@@ -54,13 +53,6 @@ function RootLayoutContent() {
 
     initializeApp();
   }, []);
-
-  // Initialize notifications when user is available
-  useEffect(() => {
-    if (user?.uid) {
-      initializeNotifications(user.uid);
-    }
-  }, [user?.uid]);
 
   if (!iconsLoaded) return null;
 

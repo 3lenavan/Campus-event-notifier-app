@@ -34,6 +34,13 @@
         {
           "photosPermission": "The app needs access to your photos to upload event images."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#F7C928"
+        }
       ]
     ],
     "experiments": {
