@@ -54,6 +54,7 @@ export const getProfile = async (uid: string): Promise<UserProfile | null> => {
   role: profileData.role || "student",
   isAdmin: profileData.is_admin || false,
   memberships, // <-- actual memberships loaded from clubs_users
+  activityVisible: profileData.activity_visible || false,
 };
 
   } catch (err) {
@@ -89,6 +90,7 @@ export const upsertProfileFromAuth = async (
       role: existing?.role || "student",
       isAdmin,
       memberships: existing?.memberships || [],
+      activityVisible: existing?.activityVisible || false,
     });
   }
 
@@ -111,7 +113,32 @@ export const upsertProfileFromAuth = async (
     role: data.role || "student",
     isAdmin: data.is_admin || false,
     memberships: [], // <-- temporarily empty; getProfile() fills it
+    activityVisible: data.activity_visible || false,
   };
+};
+
+/**
+ * Toggle whether this user's RSVPs/likes are visible to followers in the activity feed.
+ * Opt-in, defaults to false — see the activity_visible migration for rationale.
+ */
+export const updateActivityVisibility = async (uid: string, visible: boolean): Promise<void> => {
+  if (isDemoMode) {
+    const existing = await getDemoProfile(uid);
+    if (existing) {
+      await saveDemoProfile({ ...existing, activityVisible: visible });
+    }
+    return;
+  }
+
+  const { error } = await supabase
+    .from("user_profiles")
+    .update({ activity_visible: visible })
+    .eq("uid", uid);
+
+  if (error) {
+    console.error("Error updating activity visibility:", error);
+    throw error;
+  }
 };
 
 /**

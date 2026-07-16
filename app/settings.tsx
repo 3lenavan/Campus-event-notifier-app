@@ -1,16 +1,32 @@
 import { router } from "expo-router";
+import { useState } from "react";
 import { SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useAuthUser } from "../src/hooks/useAuthUser";
+import { updateActivityVisibility } from "../src/services/profileService";
 import { LightThemeColors, useAppTheme } from "../src/ThemeContext";
 import { HoneycombBackground } from "../src/components";
 
 
 export default function Settings() {
-  const { profile } = useAuthUser();
+  const { profile, refreshProfile } = useAuthUser();
   const themeContext = useAppTheme();
   const colors = themeContext?.colors || LightThemeColors;
   const isDark = themeContext?.isDark || false;
   const toggleTheme = themeContext?.toggleTheme || (() => {});
+  const [updatingVisibility, setUpdatingVisibility] = useState(false);
+
+  const toggleActivityVisibility = async (value: boolean) => {
+    if (!profile?.uid || updatingVisibility) return;
+    setUpdatingVisibility(true);
+    try {
+      await updateActivityVisibility(profile.uid, value);
+      await refreshProfile();
+    } catch (error) {
+      console.error("Error updating activity visibility:", error);
+    } finally {
+      setUpdatingVisibility(false);
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.safeArea }]}>
@@ -23,6 +39,14 @@ export default function Settings() {
       <View style={[styles.card, styles.cardSpacing, styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <Text style={[styles.title, { color: colors.text }]}>Dark Mode</Text>
         <Switch value={isDark} onValueChange={toggleTheme} />
+      </View>
+
+      <View style={[styles.card, styles.cardSpacing, styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={{ flex: 1, marginRight: 12 }}>
+          <Text style={[styles.title, { color: colors.text }]}>Share Activity with Followers</Text>
+          <Text style={[styles.subtitle, { color: colors.subtitle }]}>Let people who follow you see events you RSVP to or like</Text>
+        </View>
+        <Switch value={profile?.activityVisible || false} onValueChange={toggleActivityVisibility} disabled={updatingVisibility} />
       </View>
 
       <TouchableOpacity
