@@ -8,6 +8,11 @@ import { getEventPolicy } from '../lib/eventPolicy';
 import { CreateEventInput, Event } from '../types';
 import { getEventAttendeeCounts } from './interactionsService';
 
+// Doesn't need to be cryptographically secure — just unpredictable enough that a
+// stranger can't guess it without seeing the organizer's actual QR code.
+const generateCheckinCode = (): string =>
+  `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
+
 const listDemoEventsWithAttendees = async (): Promise<Event[]> => {
   const events = await listDemoEvents();
   const attendeeCounts = await getDemoInteractionCounts(
@@ -51,6 +56,7 @@ export const listEvents = async (): Promise<Event[]> => {
       status: row.status || 'pending',
       moderationNote: row.moderation_note || undefined,
       imageUrl: row.image_url || undefined,
+      checkinCode: row.checkin_code || undefined,
     }));
 
     // Get attendee counts for all events
@@ -103,6 +109,7 @@ export const listApprovedEvents = async (forceRefresh: boolean = false): Promise
       status: row.status || 'approved',
       moderationNote: row.moderation_note || undefined,
       imageUrl: row.image_url || undefined,
+      checkinCode: row.checkin_code || undefined,
     }));
 
     // Get attendee counts for all events
@@ -160,6 +167,7 @@ export const listClubEvents = async (clubId: string): Promise<Event[]> => {
       status: row.status || 'approved', // ✅ FIXED: since we filter approved
       moderationNote: row.moderation_note || undefined,
       imageUrl: row.image_url || undefined,
+      checkinCode: row.checkin_code || undefined,
     }));
 
     // Get attendee counts for all events
@@ -245,6 +253,7 @@ export const getEventById = async (eventId: string): Promise<Event | null> => {
       status: data.status || 'pending',
       moderationNote: data.moderation_note || undefined,
       imageUrl: data.image_url || undefined,
+      checkinCode: data.checkin_code || undefined,
     };
 
     // Get attendee count for this event
@@ -306,6 +315,7 @@ export const getEventsByIds = async (eventIds: string[]): Promise<Event[]> => {
       status: row.status || 'approved',
       moderationNote: row.moderation_note || undefined,
       imageUrl: row.image_url || undefined,
+      checkinCode: row.checkin_code || undefined,
     }));
 
     // Get attendee counts for all events
@@ -335,6 +345,8 @@ export const createEvent = async (eventInput: CreateEventInput, createdBy: strin
     const status = eventPolicy.moderationMode === 'off' ? 'approved' : 'pending';
     console.log('📋 Event policy:', { moderationMode: eventPolicy.moderationMode, status });
 
+    const checkinCode = generateCheckinCode();
+
     const insertData = {
       title: eventInput.title,
       description: eventInput.description,
@@ -345,6 +357,7 @@ export const createEvent = async (eventInput: CreateEventInput, createdBy: strin
       status: status,
       created_at: new Date().toISOString(),
       image_url: eventInput.imageUrl || null,
+      checkin_code: checkinCode,
     };
     console.log('💾 Inserting event:', insertData);
 
@@ -373,6 +386,7 @@ export const createEvent = async (eventInput: CreateEventInput, createdBy: strin
       status: data.status || status,
       moderationNote: data.moderation_note || undefined,
       imageUrl: data.image_url || undefined,
+      checkinCode: data.checkin_code || checkinCode,
     };
 
     console.log('🎉 Event created successfully:', result);

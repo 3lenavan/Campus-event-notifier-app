@@ -13,8 +13,23 @@ export interface DemoClub {
   createdAt: string;
 }
 
-type DemoInteraction = "likes" | "favorites" | "rsvps";
+type DemoInteraction = "likes" | "favorites" | "rsvps" | "checkins";
 type InteractionMap = Record<string, string[]>;
+
+export interface DemoUser {
+  uid: string;
+  name: string;
+}
+
+// A small fake roster so the friend search/follow feature has someone to find in
+// demo mode. There's only ever one real logged-in user on-device in demo mode, so
+// these can't follow you back or show up in an activity feed — see friendsService.ts.
+export const DEMO_USERS: DemoUser[] = [
+  { uid: "demo-user-maya", name: "Maya Chen" },
+  { uid: "demo-user-jordan", name: "Jordan Patel" },
+  { uid: "demo-user-sam", name: "Sam Rivera" },
+  { uid: "demo-user-alex", name: "Alex Kim" },
+];
 
 const CUSTOM_EVENTS_KEY = "@buzzup/demo-events";
 const PROFILES_KEY = "@buzzup/demo-profiles";
@@ -104,6 +119,7 @@ const buildSeedEvents = (): Event[] => [
     status: "approved",
     imageUrl: DEMO_CLUBS[0].imageUrl,
     attendees: 28,
+    checkinCode: "CHECKIN-BUILD",
   },
   {
     id: "900002",
@@ -117,6 +133,7 @@ const buildSeedEvents = (): Event[] => [
     status: "approved",
     imageUrl: DEMO_CLUBS[1].imageUrl,
     attendees: 64,
+    checkinCode: "CHECKIN-BLOCK",
   },
   {
     id: "900003",
@@ -130,6 +147,7 @@ const buildSeedEvents = (): Event[] => [
     status: "approved",
     imageUrl: DEMO_CLUBS[2].imageUrl,
     attendees: 19,
+    checkinCode: "CHECKIN-PAINT",
   },
   {
     id: "900004",
@@ -143,6 +161,7 @@ const buildSeedEvents = (): Event[] => [
     status: "approved",
     imageUrl: DEMO_CLUBS[3].imageUrl,
     attendees: 41,
+    checkinCode: "CHECKIN-RUN",
   },
 ];
 
@@ -163,6 +182,8 @@ export const listDemoEvents = async (): Promise<Event[]> => {
   );
 };
 
+const randomCheckinCode = () => `CHECKIN-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+
 export const createDemoEvent = async (
   eventInput: CreateEventInput,
   createdBy: string
@@ -174,6 +195,7 @@ export const createDemoEvent = async (
     createdAt: Date.now(),
     status: "approved",
     attendees: 0,
+    checkinCode: randomCheckinCode(),
   };
   const customEvents = await readCustomEvents();
   await AsyncStorage.setItem(CUSTOM_EVENTS_KEY, JSON.stringify([event, ...customEvents]));
@@ -263,7 +285,7 @@ export const getDemoUserEventIds = async (
 };
 
 export const getDemoInteractionCounts = async (
-  kind: "likes" | "rsvps",
+  kind: "likes" | "rsvps" | "checkins",
   eventIds: string[]
 ): Promise<Record<string, number>> => {
   const interactions = await readInteractions(kind);
@@ -273,7 +295,7 @@ export const getDemoInteractionCounts = async (
   return Object.fromEntries(
     eventIds.map((eventId) => [
       eventId,
-      (kind === "likes" ? BASE_LIKE_COUNTS[eventId] || 0 : attendeeCounts.get(eventId) || 0) +
+      (kind === "likes" ? BASE_LIKE_COUNTS[eventId] || 0 : kind === "rsvps" ? attendeeCounts.get(eventId) || 0 : 0) +
         (interactions[eventId]?.length || 0),
     ])
   );

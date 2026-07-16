@@ -6,6 +6,7 @@ export interface UserProfile {
   role: string;
   isAdmin: boolean;
   memberships: string[]; // <-- ADD THIS BACK
+  activityVisible: boolean; // opt-in: show this user's RSVPs/likes to followers
 }
 
 
@@ -35,6 +36,7 @@ export interface Event {
   moderationNote?: string;
   imageUrl?: string;
   attendees?: number; // Number of people who RSVP'd to this event
+  checkinCode?: string; // Code encoded in the organizer's check-in QR
 }
 
 // Service Types

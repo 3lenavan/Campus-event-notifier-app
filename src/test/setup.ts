@@ -1,5 +1,10 @@
 import { vi } from 'vitest';
 
+// React Native's Metro bundler injects this global; vitest runs in plain Node/jsdom
+// so anything imported at module scope that reads __DEV__ (e.g. data/supabaseClient.tsx)
+// throws ReferenceError without it.
+(global as any).__DEV__ = true;
+
 // Mock Local Storage
 const localStorageMock = {
   getItem: vi.fn(),

@@ -24,14 +24,19 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import QRCode from "react-native-qrcode-svg";
+import { isDemoMode, supabase } from "../data/supabaseClient";
 import { Club, getClubByIdSupabase } from "../data/dataLoader";
 import { auth, db } from "../src/lib/firebase";
+import { useAuthUser } from "../src/hooks/useAuthUser";
 import {
   cancelEventReminders,
   notifyRSVPConfirmation,
   scheduleEventReminders,
 } from "../src/services/notificationsService";
 import { listApprovedEvents, getEventById } from "../src/services/eventsService";
+import { listClubs } from "../src/services/clubsService";
+import { canManageCheckin, getCheckinQrPayload, isWithinCheckinWindow } from "../src/services/checkinService";
 import {
   getEventLikeCount,
   getEventsInteractions,
@@ -64,6 +69,8 @@ interface Event {
   organizer?: string;
   fullDescription?: string;
   status?: "pending" | "approved" | "rejected";
+  clubId?: string;
+  checkinCode?: string;
 }
 
 // Main Component
@@ -89,6 +96,45 @@ export default function EventDetails() {
     const unsubscribe = onAuthStateChanged(auth, (user) => setCurrentUser(user));
     return () => unsubscribe();
   }, []);
+
+  // Organizer check-in tools: which clubs the current user can manage events for.
+  // Mirrors src/pages/CreateEvent.tsx's loadUserClubs — same trust check, same source.
+  const { profile } = useAuthUser();
+  const [userClubIds, setUserClubIds] = useState<string[]>([]);
+  useEffect(() => {
+    const loadUserClubs = async () => {
+      if (!currentUser?.uid) {
+        setUserClubIds([]);
+        return;
+      }
+
+      if (isDemoMode) {
+        const availableClubs = await listClubs();
+        setUserClubIds(
+          availableClubs
+            .filter((c) => profile?.memberships.includes(c.slug))
+            .map((c) => c.id)
+        );
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("clubs_users")
+        .select("club_id")
+        .eq("user_id", currentUser.uid);
+
+      if (error || !data) {
+        setUserClubIds([]);
+        return;
+      }
+
+      setUserClubIds(data.map((row: any) => String(row.club_id)));
+    };
+
+    loadUserClubs();
+  }, [currentUser?.uid, profile?.memberships]);
+
+  const canManage = event ? canManageCheckin({ clubId: event.clubId || "" }, profile, userClubIds) : false;
 
   // Fetch event details
   useEffect(() => {
@@ -126,6 +172,8 @@ export default function EventDetails() {
             organizer: undefined,
             fullDescription: foundEvent.description,
             status: foundEvent.status,
+            clubId: foundEvent.clubId,
+            checkinCode: foundEvent.checkinCode,
           };
 
           setEvent(eventData);
@@ -178,6 +226,8 @@ export default function EventDetails() {
               organizer: undefined,
               fullDescription: fallbackEvent.description,
               status: fallbackEvent.status,
+              clubId: fallbackEvent.clubId,
+              checkinCode: fallbackEvent.checkinCode,
             };
 
             setEvent(eventData);
@@ -710,6 +760,17 @@ export default function EventDetails() {
             </TouchableOpacity>
           )}
 
+          {/* Check In Button - only for RSVP'd attendees, within the check-in window */}
+          {rsvped && event.status === "approved" && isWithinCheckinWindow(event.date) && (
+            <TouchableOpacity
+              style={[styles.primaryButton, { backgroundColor: colors.primary }]}
+              onPress={() => router.push({ pathname: "/checkin-scanner", params: { id: event.id } })}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.primaryButtonText}>Scan to Check In</Text>
+            </TouchableOpacity>
+          )}
+
           {/* Add to Calendar Button */}
           <TouchableOpacity
             style={[styles.secondaryButton, { backgroundColor: colors.card, borderColor: colors.border }]}
@@ -719,6 +780,27 @@ export default function EventDetails() {
             <Ionicons name="calendar-outline" size={20} color={colors.text} />
             <Text style={[styles.secondaryButtonText, { color: colors.text }]}>Add to Calendar</Text>
           </TouchableOpacity>
+
+          {/* Organizer tools: check-in QR + analytics, only visible to club members/admins */}
+          {canManage && event.checkinCode && (
+            <View style={[styles.organizerCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[styles.organizerTitle, { color: colors.text }]}>Organizer tools</Text>
+              <Text style={[styles.organizerSubtitle, { color: colors.subtitle }]}>
+                Display this code at the venue — attendees scan it with their own phone to check in.
+              </Text>
+              <View style={styles.qrWrapper}>
+                <QRCode value={getCheckinQrPayload({ id: event.id, checkinCode: event.checkinCode })} size={180} />
+              </View>
+              <TouchableOpacity
+                style={[styles.secondaryButton, { backgroundColor: colors.card, borderColor: colors.border }]}
+                onPress={() => router.push({ pathname: "/event-analytics", params: { id: event.id } })}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="stats-chart-outline" size={20} color={colors.text} />
+                <Text style={[styles.secondaryButtonText, { color: colors.text }]}>View Check-in Analytics</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -924,5 +1006,27 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
+  },
+  organizerCard: {
+    marginTop: 12,
+    padding: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: "center",
+    gap: 12,
+  },
+  organizerTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    alignSelf: "flex-start",
+  },
+  organizerSubtitle: {
+    fontSize: 13,
+    alignSelf: "flex-start",
+  },
+  qrWrapper: {
+    padding: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
   },
 });
