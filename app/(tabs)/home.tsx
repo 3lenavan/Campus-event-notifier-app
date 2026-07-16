@@ -2,9 +2,10 @@ import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getAuth } from "firebase/auth";
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthUser } from "../../src/hooks/useAuthUser";
+import { getFollowedClubIds } from "../../src/services/club-follow-service";
 import { listApprovedEvents } from "../../src/services/eventsService";
 import { listClubs } from "../../src/services/clubsService";
 import {
@@ -12,6 +13,7 @@ import {
   toggleFavorite as toggleFavoriteService,
   toggleLike as toggleLikeService,
 } from "../../src/services/interactionsService";
+import { getRecommendedEvents, Recommendation } from "../../src/services/recommendationsService";
 import EventCard, { Event as BaseEvent } from "../event-card";
 import { useAppTheme, LightThemeColors } from "../../src/ThemeContext";
 import { HoneycombBackground } from "../../src/components";
@@ -29,6 +31,8 @@ type FeedEvent = BaseEvent & {
     avatarUrl?: string;
   };
 };
+
+type RecommendedFeedEvent = FeedEvent & { clubId: string; dateISO: string };
 
 export default function HomeScreen() {
   const { user, profile } = useAuthUser();
@@ -50,6 +54,7 @@ export default function HomeScreen() {
   const [events, setEvents] = useState<FeedEvent[]>([]);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [recommendations, setRecommendations] = useState<Recommendation<RecommendedFeedEvent>[]>([]);
 
   const loadApproved = useCallback(
     async (forceRefresh: boolean = false) => {
@@ -133,6 +138,10 @@ export default function HomeScreen() {
           .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
         // Load likes and favorites if user is logged in
+        let followedClubIds = new Set<string>();
+        let interactedClubIds = new Set<string>();
+        let excludeEventIds = new Set<string>();
+
         if (user?.uid) {
           const eventIds = eventsMapped.map((e) => e.id);
           const interactions = await getEventsInteractions(user.uid, eventIds);
@@ -142,10 +151,47 @@ export default function HomeScreen() {
             event.favorited = interactions.favoritedEvents.has(event.id);
             event.likes = interactions.likeCounts[event.id] || 0;
           });
+
+          followedClubIds = await getFollowedClubIds(user.uid);
+          excludeEventIds = interactions.rsvpedEvents;
+          interactedClubIds = new Set(
+            eventsMapped
+              .filter(
+                (event) =>
+                  interactions.likedEvents.has(event.id) ||
+                  interactions.favoritedEvents.has(event.id) ||
+                  interactions.rsvpedEvents.has(event.id)
+              )
+              .map((event) => event.club.id)
+          );
         }
 
         console.log("✅ Setting events:", eventsMapped.length);
         setEvents(eventsMapped);
+
+        try {
+          const clubCategoryById: Record<string, string> = {};
+          clubList.forEach((c) => {
+            clubCategoryById[String(c.id)] = c.category;
+          });
+
+          const candidates: RecommendedFeedEvent[] = eventsMapped.map((event) => ({
+            ...event,
+            clubId: event.club.id,
+            dateISO: event.date || "",
+          }));
+
+          setRecommendations(
+            getRecommendedEvents(
+              candidates,
+              { clubCategoryById, followedClubIds, interactedClubIds, excludeEventIds },
+              5
+            )
+          );
+        } catch (recError) {
+          console.error("Error computing recommendations:", recError);
+          setRecommendations([]);
+        }
       } catch (e) {
         console.error("❌ Error loading approved events:", e);
       }
@@ -325,29 +371,50 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         ListHeaderComponent={
-          <View style={[styles.header, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
-            <View style={styles.headerTopRow}>
-              <BuzzUpBrandLogo compact />
-              {user && (
-                <View style={[styles.avatar, { backgroundColor: colors.accent, borderColor: colors.secondary }]}>
-                  <Text style={styles.avatarText}>
-                    {(profile?.name || user?.displayName || user?.email || "?")[0].toUpperCase()}
-                  </Text>
+          <>
+            <View style={[styles.header, { backgroundColor: isDark ? colors.card : colors.nectar, borderColor: colors.border }]}>
+              <View style={styles.headerTopRow}>
+                <BuzzUpBrandLogo compact />
+                {user && (
+                  <View style={[styles.avatar, { backgroundColor: colors.accent, borderColor: colors.secondary }]}>
+                    <Text style={styles.avatarText}>
+                      {(profile?.name || user?.displayName || user?.email || "?")[0].toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <View style={[styles.heroRow, isDesktop && styles.desktopHeroRow]}>
+                <BeeMascot size={132} animated style={styles.heroMascot} />
+                <View style={styles.heroCopy}>
+                  <View style={styles.kickerRow}>
+                    <Ionicons name="radio-outline" size={16} color={colors.primary} />
+                    <Text style={[styles.kicker, { color: colors.primary }]}>Hive Feed</Text>
+                  </View>
+                  <Text style={[styles.headerTitle, isDesktop && styles.desktopHeaderTitle, { color: colors.text }]}>{getUserGreeting()}!</Text>
+                  <Text style={[styles.headerSubtitle, isDesktop && styles.desktopHeaderSubtitle, { color: colors.subtitle }]}>Fresh campus buzz, sorted by what is coming up next.</Text>
                 </View>
-              )}
-            </View>
-            <View style={[styles.heroRow, isDesktop && styles.desktopHeroRow]}>
-              <BeeMascot size={132} animated style={styles.heroMascot} />
-              <View style={styles.heroCopy}>
-                <View style={styles.kickerRow}>
-                  <Ionicons name="radio-outline" size={16} color={colors.primary} />
-                  <Text style={[styles.kicker, { color: colors.primary }]}>Hive Feed</Text>
-                </View>
-                <Text style={[styles.headerTitle, isDesktop && styles.desktopHeaderTitle, { color: colors.text }]}>{getUserGreeting()}!</Text>
-                <Text style={[styles.headerSubtitle, isDesktop && styles.desktopHeaderSubtitle, { color: colors.subtitle }]}>Fresh campus buzz, sorted by what is coming up next.</Text>
               </View>
             </View>
-          </View>
+
+            {recommendations.length > 0 && (
+              <View style={styles.recommendedSection}>
+                <Text style={[styles.recommendedTitle, { color: colors.text }]}>Recommended for you</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recommendedList}>
+                  {recommendations.map(({ event, reason }) => (
+                    <Pressable
+                      key={event.id}
+                      onPress={() => onPressEvent(event)}
+                      style={[styles.recommendedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                    >
+                      <Text numberOfLines={2} style={[styles.recommendedCardTitle, { color: colors.text }]}>{event.title}</Text>
+                      <Text numberOfLines={1} style={[styles.recommendedCardMeta, { color: colors.subtitle }]}>{event.time} · {event.location}</Text>
+                      <Text numberOfLines={1} style={[styles.recommendedReason, { color: colors.primary }]}>{reason}</Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+          </>
         }
         ItemSeparatorComponent={() => <View style={styles.eventSeparator} />}
         renderItem={({ item }) => (
@@ -471,4 +538,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   eventSeparator: { height: 18 },
+  recommendedSection: { marginBottom: 24 },
+  recommendedTitle: { fontSize: 18, fontWeight: "700", marginBottom: 12 },
+  recommendedList: { gap: 12, paddingRight: 4 },
+  recommendedCard: {
+    width: 220,
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 6,
+  },
+  recommendedCardTitle: { fontSize: 15, fontWeight: "700" },
+  recommendedCardMeta: { fontSize: 12, fontWeight: "500" },
+  recommendedReason: { fontSize: 11, fontWeight: "700", textTransform: "uppercase" },
 });
