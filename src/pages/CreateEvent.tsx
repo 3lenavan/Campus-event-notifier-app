@@ -22,6 +22,7 @@ import { useAuthUser } from '../hooks/useAuthUser';
 import { checkPersonalConflicts } from '../lib/eventConflicts';
 import { getDefaultDenylist, validateEventInput } from '../lib/eventValidators';
 import { listClubs } from '../services/clubsService';
+import { CampusLocation, listCampusLocations } from '../services/campusMapService';
 import { createEvent, getEventsByIds } from '../services/eventsService';
 import { getUserRSVPdEvents } from '../services/interactionsService';
 import { Club } from '../types';
@@ -185,6 +186,9 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
   const [eventDate, setEventDate] = useState(getDefaultEventDate());
   const [location, setLocation] = useState('');
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [campusLocations, setCampusLocations] = useState<CampusLocation[]>([]);
+  const [selectedBuilding, setSelectedBuilding] = useState('');
+  const [roomNumber, setRoomNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [conflictWarnings, setConflictWarnings] = useState<string[]>([]);
@@ -338,23 +342,33 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
 
   const pickerColor = '#000000';
 
-  const toTitleCase = (value: string) =>
-    value.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
-
   const LOCATION_REGEX = /^.+\s-\sRoom\s\d+$/;
 
-  const handleLocationChange = (value: string) => {
-    const formatted = toTitleCase(value);
-    setLocation(formatted);
+  // Location is built from a building picker + room number rather than free text,
+  // so it always matches LOCATION_REGEX (and can be matched back to a building on
+  // the campus map) once both are filled in.
+  const handleRoomNumberChange = (value: string) => {
+    const digitsOnly = value.replace(/[^0-9]/g, '');
+    setRoomNumber(digitsOnly);
 
-    if (formatted.length === 0) {
-      setLocationError(null);
-    } else if (!LOCATION_REGEX.test(formatted)) {
-      setLocationError("Use format: Building - Room 123");
+    if (selectedBuilding && !digitsOnly) {
+      setLocationError('Enter a room number');
     } else {
       setLocationError(null);
     }
   };
+
+  useEffect(() => {
+    listCampusLocations().then(setCampusLocations);
+  }, []);
+
+  useEffect(() => {
+    if (selectedBuilding && roomNumber) {
+      setLocation(`${selectedBuilding} - Room ${roomNumber}`);
+    } else {
+      setLocation('');
+    }
+  }, [selectedBuilding, roomNumber]);
 
   // Updated: Pick image using new picker that returns { uri, base64 }
   const handlePickImage = async () => {
@@ -382,7 +396,7 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
     if (!title.trim()) errors.push('Please enter a title');
     if (!description.trim()) errors.push('Please enter a description');
     if (!location.trim() || !LOCATION_REGEX.test(location.trim()))
-      errors.push("Location must match 'Building - Room 123'");
+      errors.push('Please select a building and enter a room number');
 
     if (!userClubIds.includes(String(selectedClubId))) {
       errors.push('You must be a verified member of this club to create events');
@@ -462,7 +476,8 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
       // Clear form
       setTitle('');
       setDescription('');
-      setLocation('');
+      setSelectedBuilding('');
+      setRoomNumber('');
       setSelectedImageUri(null);
       setSelectedImageBase64(null);
       setValidationErrors([]);
@@ -745,15 +760,43 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
             )}
           </View>
 
-          {/* Location */}
+          {/* Location: building picker + room number, matches the campus map's buildings */}
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Location *</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Building *</Text>
+            <View style={styles.clubSelector}>
+              {campusLocations.map((campusLocation) => (
+                <TouchableOpacity
+                  key={campusLocation.id}
+                  style={[
+                    styles.clubOption,
+                    { backgroundColor: isDark ? colors.border : colors.nectar, borderColor: colors.border },
+                    selectedBuilding === campusLocation.name && [styles.clubOptionSelected, { backgroundColor: colors.primary }],
+                  ]}
+                  onPress={() => setSelectedBuilding(campusLocation.name)}
+                >
+                  <Text
+                    style={[
+                      styles.clubOptionText,
+                      { color: colors.text },
+                      selectedBuilding === campusLocation.name && styles.clubOptionTextSelected,
+                    ]}
+                  >
+                    {campusLocation.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: colors.text }]}>Room Number *</Text>
             <TextInput
               style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.inputBackground }]}
-              placeholder="Building - Room 123"
+              placeholder="123"
               placeholderTextColor={colors.placeholderText}
-              value={location}
-              onChangeText={handleLocationChange}
+              value={roomNumber}
+              onChangeText={handleRoomNumberChange}
+              keyboardType="number-pad"
             />
             {locationError && (
               <Text style={[styles.errorTextSmall, { color: '#DC2626' }]}>{locationError}</Text>

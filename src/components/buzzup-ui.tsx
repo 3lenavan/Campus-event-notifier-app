@@ -77,7 +77,7 @@ export function NotificationButton({ onPress }: { onPress?: () => void }) {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Notifications, unread items"
-      onPress={onPress || (() => router.push("/(tabs)/profile"))}
+      onPress={onPress || (() => router.push("/activity-feed"))}
       style={({ pressed }) => ({
         width: 46,
         height: 46,
@@ -159,6 +159,7 @@ const navItems = [
   ["Home", "home", "/(tabs)/home"],
   ["Discover", "compass", "/(tabs)/discover"],
   ["Create Event", "add-circle", "/(tabs)/create-event"],
+  ["Map", "map", "/(tabs)/map"],
   ["Saved", "bookmark", "/(tabs)/saved"],
   ["My Clubs", "people", "/(tabs)/discover"],
   ["Profile", "person", "/(tabs)/profile"],
