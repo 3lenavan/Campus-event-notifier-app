@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Alert,
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
@@ -14,6 +13,7 @@ import { useAuthUser } from '../hooks/useAuthUser';
 import { getPendingEvents, approveEvent, rejectEvent } from '../services/eventsService';
 import { Event } from '../types';
 import { useAppTheme, LightThemeColors } from '../ThemeContext';
+import { showAlert } from "../lib/alert";
 
 interface ClubModerationPanelProps {
   clubId: string;
@@ -41,7 +41,7 @@ export const ClubModerationPanel: React.FC<ClubModerationPanelProps> = ({ clubId
       setPendingEvents(events);
     } catch (error) {
       console.error('Error loading pending events:', error);
-      Alert.alert('Error', 'Failed to load pending events');
+      showAlert('Error', 'Failed to load pending events');
     } finally {
       setLoading(false);
     }
@@ -50,29 +50,29 @@ export const ClubModerationPanel: React.FC<ClubModerationPanelProps> = ({ clubId
   const handleApprove = async (eventId: string) => {
     try {
       await approveEvent(eventId);
-      Alert.alert('Success', 'Event approved successfully');
+      showAlert('Success', 'Event approved successfully');
       loadPendingEvents(); // Refresh the list
     } catch (error) {
       console.error('Error approving event:', error);
-      Alert.alert('Error', 'Failed to approve event');
+      showAlert('Error', 'Failed to approve event');
     }
   };
 
   const handleReject = async (eventId: string) => {
     if (!rejectNote.trim()) {
-      Alert.alert('Error', 'Please provide a reason for rejection');
+      showAlert('Error', 'Please provide a reason for rejection');
       return;
     }
 
     try {
       await rejectEvent(eventId, rejectNote.trim());
-      Alert.alert('Success', 'Event rejected successfully');
+      showAlert('Success', 'Event rejected successfully');
       setRejectingEventId(null);
       setRejectNote('');
       loadPendingEvents(); // Refresh the list
     } catch (error) {
       console.error('Error rejecting event:', error);
-      Alert.alert('Error', 'Failed to reject event');
+      showAlert('Error', 'Failed to reject event');
     }
   };
 

@@ -8,7 +8,6 @@ import {
 } from "firebase/auth";
 import { useState } from "react";
 import {
-  Alert,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -17,6 +16,7 @@ import {
   View,
 } from "react-native";
 import { useAppTheme, LightThemeColors } from "../src/ThemeContext";
+import { showAlert } from "../src/lib/alert";
 
 export default function UpdateEmail() {
   const user = auth.currentUser;
@@ -32,12 +32,12 @@ export default function UpdateEmail() {
     if (!user) return;
 
     if (!currentPassword || !newEmail || !confirmEmail) {
-      Alert.alert("Error", "Please fill in all fields.");
+      showAlert("Error", "Please fill in all fields.");
       return;
     }
 
     if (newEmail !== confirmEmail) {
-      Alert.alert("Error", "Emails do not match.");
+      showAlert("Error", "Emails do not match.");
       return;
     }
 
@@ -50,7 +50,7 @@ export default function UpdateEmail() {
 
       await updateEmail(user, newEmail.trim());
 
-      Alert.alert("Success", "Email updated!", [
+      showAlert("Success", "Email updated!", [
         { text: "OK", onPress: () => {
           if (router.canGoBack()) {
             router.back();
@@ -60,7 +60,7 @@ export default function UpdateEmail() {
         }},
       ]);
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed to update email.");
+      showAlert("Error", err.message || "Failed to update email.");
     }
   };
 

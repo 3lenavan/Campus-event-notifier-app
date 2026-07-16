@@ -4,7 +4,6 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -31,6 +30,7 @@ import { HoneycombBackground } from '../components';
 
 // Updated import to use rewritten image picker and uploader
 import { pickImage, uploadEventImage } from '../services/imageUploadService';
+import { showAlert } from "../lib/alert";
 
 // Web HTML5 input component - renders native HTML inputs for web
 const WebDateInput: React.FC<{
@@ -387,7 +387,7 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
 
   const handleCreateEvent = async () => {
     if (!user) {
-      Alert.alert('Error', 'Please sign in first');
+      showAlert('Error', 'Please sign in first');
       return;
     }
 
@@ -452,7 +452,7 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
       if (uploadedUrl) {
         imageUrl = uploadedUrl;
       } else {
-        Alert.alert("Warning", "Failed to upload image. Event will be created without image.");
+        showAlert("Warning", "Failed to upload image. Event will be created without image.");
       }
 
       setUploadingImage(false);
@@ -488,7 +488,7 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
         ? `"${title.trim()}" has been successfully created and is now visible to everyone!`
         : `"${title.trim()}" has been created and is pending admin approval.`;
 
-      Alert.alert(
+      showAlert(
         'Event Created! ✅', 
         message,
         [
@@ -514,7 +514,7 @@ export const CreateEvent: React.FC<CreateEventProps> = ({ clubId }) => {
       );
     } catch (error: any) {
       console.error('Error creating event:', error);
-      Alert.alert('Error', error.message || 'Failed to create event. Please try again.');
+      showAlert('Error', error.message || 'Failed to create event. Please try again.');
       setValidationErrors([error.message || 'Failed to create event']);
     } finally {
       setLoading(false);

@@ -15,7 +15,6 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   Image,
   Platform,
   ScrollView,
@@ -47,6 +46,7 @@ import {
 } from "../src/services/interactionsService";
 import { useAppTheme, LightThemeColors } from "../src/ThemeContext";
 import { BuzzUpMascot, HoneycombBackground } from "../src/components";
+import { showAlert } from "../src/lib/alert";
 
 // Event interface
 interface Event {
@@ -471,13 +471,13 @@ export default function EventDetails() {
 
               setTimeout(() => {
                 if (Platform.OS === "ios") {
-                  Alert.alert(
+                  showAlert(
                     "How to Add to Calendar",
                     'In the share menu:\n\n• Tap "Add to Calendar"\n• Or "Save to Files" then open it\n• Or email it to yourself',
                     [{ text: "OK" }]
                   );
                 } else {
-                  Alert.alert(
+                  showAlert(
                     "How to Add to Calendar",
                     'In the share menu:\n\n• Tap "Google Calendar" if available\n• Or save the file then open it with your calendar app',
                     [{ text: "OK" }]

@@ -8,7 +8,6 @@ import {
 } from "firebase/auth";
 import { useState } from "react";
 import {
-  Alert,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -17,6 +16,7 @@ import {
   View,
 } from "react-native";
 import { useAppTheme, LightThemeColors } from "../src/ThemeContext";
+import { showAlert } from "../src/lib/alert";
 
 export default function UpdatePassword() {
   const user = auth.currentUser;
@@ -33,12 +33,12 @@ export default function UpdatePassword() {
     if (!user || !user.email) return;
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields.");
+      showAlert("Error", "Please fill in all fields.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
+      showAlert("Error", "Passwords do not match.");
       return;
     }
 
@@ -50,7 +50,7 @@ export default function UpdatePassword() {
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, newPassword);
 
-      Alert.alert("Password Updated!", "Your password has been updated.", [
+      showAlert("Password Updated!", "Your password has been updated.", [
         { text: "OK", onPress: () => {
           if (router.canGoBack()) {
             router.back();
@@ -60,7 +60,7 @@ export default function UpdatePassword() {
         }},
       ]);
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed to update password.");
+      showAlert("Error", err.message || "Failed to update password.");
     }
   };
 

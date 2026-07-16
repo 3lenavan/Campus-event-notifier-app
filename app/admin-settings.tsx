@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuthUser } from '../src/hooks/useAuthUser';
 import { EventPolicy, getEventPolicy, setEventPolicy } from '../src/lib/eventPolicy';
 import { notifyApprovalUpdate } from '../src/services/notificationsService';
@@ -9,6 +9,7 @@ import { listClubs, updateClubCodes } from '../src/services/clubsService';
 import { approveEvent, listEvents, rejectEvent } from '../src/services/eventsService';
 import { Club, Event } from '../src/types';
 import { useAppTheme, LightThemeColors } from '../src/ThemeContext';
+import { showAlert } from "../src/lib/alert";
 
 export default function AdminSettings() {
   const { profile } = useAuthUser();
@@ -46,7 +47,7 @@ export default function AdminSettings() {
         setSelectedClubId(clubsList[0].id);
       }
     } catch (e) {
-      Alert.alert('Error', 'Failed to load admin data');
+      showAlert('Error', 'Failed to load admin data');
     } finally {
       setEventsLoading(false);
       setClubsLoading(false);
@@ -69,7 +70,7 @@ export default function AdminSettings() {
         } catch {} 
       }
     } catch (e) {
-      Alert.alert('Error', 'Failed to approve event');
+      showAlert('Error', 'Failed to approve event');
     }
   };
 
@@ -79,9 +80,9 @@ export default function AdminSettings() {
       const next = { ...policy, moderationMode: mode } as EventPolicy;
       await setEventPolicy(next);
       setPolicy(next);
-      Alert.alert('Success', mode === 'off' ? 'Auto-approve enabled' : 'Approval required');
+      showAlert('Success', mode === 'off' ? 'Auto-approve enabled' : 'Approval required');
     } catch {
-      Alert.alert('Error', 'Failed to update moderation mode');
+      showAlert('Error', 'Failed to update moderation mode');
     }
   };
 
@@ -92,17 +93,17 @@ export default function AdminSettings() {
       const ev = allEvents.find(e => e.id === eventId);
       if (ev) { try { await notifyApprovalUpdate(ev.title, false); } catch {} }
     } catch (e) {
-      Alert.alert('Error', 'Failed to reject event');
+      showAlert('Error', 'Failed to reject event');
     }
   };
 
   const handleRotateCodes = async () => {
     if (!selectedClubId) {
-      Alert.alert('Validation', 'Please select a club');
+      showAlert('Validation', 'Please select a club');
       return;
     }
     if (!newMemberCode && !newModeratorCode) {
-      Alert.alert('Validation', 'Enter at least one new code');
+      showAlert('Validation', 'Enter at least one new code');
       return;
     }
     setSavingCodes(true);
@@ -113,9 +114,9 @@ export default function AdminSettings() {
       });
       setNewMemberCode('');
       setNewModeratorCode('');
-      Alert.alert('Success', 'Codes updated');
+      showAlert('Success', 'Codes updated');
     } catch (e) {
-      Alert.alert('Error', 'Failed to update codes');
+      showAlert('Error', 'Failed to update codes');
     } finally {
       setSavingCodes(false);
     }

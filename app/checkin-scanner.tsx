@@ -2,12 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { checkInAttendee } from "../src/services/checkinService";
 import { getEventById } from "../src/services/eventsService";
 import { useAuthUser } from "../src/hooks/useAuthUser";
 import { useAppTheme, LightThemeColors } from "../src/ThemeContext";
 import type { Event } from "../src/types";
+import { showAlert } from "../src/lib/alert";
 
 export default function CheckinScanner() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function CheckinScanner() {
     const result = await checkInAttendee(event, user.uid, data);
 
     setProcessing(false);
-    Alert.alert(result.success ? "Checked In" : "Check-in Failed", result.message, [
+    showAlert(result.success ? "Checked In" : "Check-in Failed", result.message, [
       {
         text: "OK",
         onPress: () => {

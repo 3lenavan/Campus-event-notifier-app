@@ -8,7 +8,6 @@ import {
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     KeyboardAvoidingView,
     Platform,
     StyleSheet,
@@ -18,6 +17,7 @@ import {
     View,
 } from 'react-native';
 import { auth } from '../lib/firebase';
+import { showAlert } from "../lib/alert";
 
 interface LoginProps {
   onSuccess?: () => void;
@@ -31,20 +31,20 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
 
   const handleEmailAuth = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showAlert('Error', 'Please fill in all fields');
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      showAlert('Error', 'Please enter a valid email address');
       return;
     }
 
     // Basic password validation
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
+      showAlert('Error', 'Password must be at least 6 characters long');
       return;
     }
 
@@ -52,10 +52,10 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
     try {
       if (isSignUp) {
         await createUserWithEmailAndPassword(auth, email, password);
-        Alert.alert('Success', 'Account created successfully!');
+        showAlert('Success', 'Account created successfully!');
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        Alert.alert('Success', 'Signed in successfully!');
+        showAlert('Success', 'Signed in successfully!');
       }
       onSuccess?.();
     } catch (error: any) {
@@ -95,7 +95,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
         }
       }
       
-      Alert.alert('Error', errorMessage);
+      showAlert('Error', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -109,12 +109,12 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
       // For web, use popup; for mobile, use redirect
       if (Platform.OS === 'web') {
         await signInWithPopup(auth, provider);
-        Alert.alert('Success', 'Signed in with Google!');
+        showAlert('Success', 'Signed in with Google!');
         onSuccess?.();
       } else {
         // For React Native, you might need to use a different approach
         // This is a simplified version - you may need to implement proper Google Sign-In
-        Alert.alert('Info', 'Google Sign-In is only available on web. Please use email/password sign-in on mobile.');
+        showAlert('Info', 'Google Sign-In is only available on web. Please use email/password sign-in on mobile.');
         return;
       }
     } catch (error: any) {
@@ -142,7 +142,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
         }
       }
       
-      Alert.alert('Error', errorMessage);
+      showAlert('Error', errorMessage);
     } finally {
       setLoading(false);
     }

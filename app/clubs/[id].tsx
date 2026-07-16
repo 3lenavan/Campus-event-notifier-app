@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   AccessibilityInfo,
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -20,6 +19,7 @@ import { auth } from "../../src/lib/firebase";
 import { getFollowedClubIds, toggleClubFollow } from "../../src/services/club-follow-service";
 import { cancelRSVP, getUserRSVPdEvents, rsvpToEvent } from "../../src/services/interactionsService";
 import { buzzup } from "../../src/theme/buzzup-theme";
+import { showAlert } from "../../src/lib/alert";
 
 const fallbackCover = require("../../assets/design/buzzup-desktop-ui-mockup.png");
 
@@ -88,7 +88,7 @@ export default function ClubDetails() {
   const handleFollow = async () => {
     const user = auth.currentUser;
     if (!user) {
-      Alert.alert("Login required", "Sign in to follow clubs and receive updates.");
+      showAlert("Login required", "Sign in to follow clubs and receive updates.");
       return;
     }
     setFollowError("");
@@ -112,7 +112,7 @@ export default function ClubDetails() {
   const handleRSVP = async (eventId: string) => {
     const user = auth.currentUser;
     if (!user) {
-      Alert.alert("Login required", "Please sign in before you RSVP.");
+      showAlert("Login required", "Please sign in before you RSVP.");
       return;
     }
     const numericId = Number(eventId);
@@ -128,7 +128,7 @@ export default function ClubDetails() {
       }
     } catch (error) {
       console.error("Unable to update RSVP:", error);
-      Alert.alert("Couldn’t update RSVP", "Please try again.");
+      showAlert("Couldn’t update RSVP", "Please try again.");
     } finally {
       setRsvpLoadingEventId(null);
     }

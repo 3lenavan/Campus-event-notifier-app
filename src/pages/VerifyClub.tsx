@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -18,6 +17,7 @@ import { supabase } from "../../data/supabaseClient";
 import { listClubs } from "../services/clubsService";
 import { Club } from "../types";
 import { useAppTheme, LightThemeColors } from "../ThemeContext";
+import { showAlert } from "../lib/alert";
 
 export const VerifyClub = () => {
   const { user, refreshProfile } = useAuthUser();
@@ -57,10 +57,10 @@ export const VerifyClub = () => {
   };
 
   const handleVerify = async () => {
-    if (!user) return Alert.alert("Error", "Please sign in first.");
+    if (!user) return showAlert("Error", "Please sign in first.");
 
     if (!clubInput.trim() || !codeInput.trim()) {
-      return Alert.alert("Error", "Fill in all fields.");
+      return showAlert("Error", "Fill in all fields.");
     }
 
     setLoading(true);
@@ -74,14 +74,14 @@ export const VerifyClub = () => {
     setLoading(false);
 
     if (!result.success) {
-      return Alert.alert("Error", result.message);
+      return showAlert("Error", result.message);
     }
 
     // ✔ FIX: Refresh profile and reload clubs
     await refreshProfile();
     await loadMyClubs();
 
-    Alert.alert("Success", result.message);
+    showAlert("Success", result.message);
 
     setClubInput("");
     setCodeInput("");

@@ -1,6 +1,7 @@
 import * as ImagePicker from "expo-image-picker";
-import { Alert, Platform } from "react-native";
+import { Platform } from "react-native";
 import { supabase } from "../../data/supabaseClient";
+import { showAlert } from "../lib/alert";
 
 /**
  * Request permission
@@ -9,7 +10,7 @@ export const requestImagePermissions = async (): Promise<boolean> => {
   if (Platform.OS !== "web") {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
+      showAlert(
         "Permission Required",
         "Sorry, we need camera roll permissions to upload images."
       );
@@ -45,7 +46,7 @@ export const pickImage = async (): Promise<{ uri: string; base64: string } | nul
     };
   } catch (err) {
     console.error("Error picking image:", err);
-    Alert.alert("Error", "Failed to pick image.");
+    showAlert("Error", "Failed to pick image.");
     return null;
   }
 };
@@ -125,7 +126,7 @@ export const uploadEventImage = async (
     return data.publicUrl;
   } catch (err: any) {
     console.error("Upload error:", err);
-    Alert.alert("Upload Error", err.message || "Failed to upload image.");
+    showAlert("Upload Error", err.message || "Failed to upload image.");
     return null;
   }
 };

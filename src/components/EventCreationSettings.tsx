@@ -7,13 +7,13 @@ import {
   ScrollView,
   StyleSheet,
   Switch,
-  Alert,
-} from 'react-native';
+  } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getEventPolicy, setEventPolicy, EventPolicy } from '../lib/eventPolicy';
 import { listClubs } from '../services/clubsService';
 import { Club } from '../types';
 import { useAppTheme, LightThemeColors } from '../ThemeContext';
+import { showAlert } from "../lib/alert";
 
 interface EventCreationSettingsProps {
   onClose: () => void;
@@ -42,7 +42,7 @@ export const EventCreationSettings: React.FC<EventCreationSettingsProps> = ({ on
       setClubs(clubsData || []);
     } catch (error) {
       console.error('Error loading settings data:', error);
-      Alert.alert('Error', 'Failed to load settings');
+      showAlert('Error', 'Failed to load settings');
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ export const EventCreationSettings: React.FC<EventCreationSettingsProps> = ({ on
       setPolicy(newPolicy);
     } catch (error) {
       console.error('Error saving policy:', error);
-      Alert.alert('Error', 'Failed to save settings');
+      showAlert('Error', 'Failed to save settings');
     }
   };
 

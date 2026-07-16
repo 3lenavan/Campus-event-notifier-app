@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
-import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthUser } from "../../src/hooks/useAuthUser";
 import { auth } from "../../src/lib/firebase";
@@ -18,6 +18,7 @@ import {
 import EventCard from "../event-card";
 import { useFocusEffect } from "expo-router";
 import { useAppTheme, LightThemeColors } from "../../src/ThemeContext";
+import { showAlert } from "../../src/lib/alert";
 
 type ProfileEvent = {
   id: string;
@@ -70,7 +71,7 @@ const Profile = () => {
       if (status === 'granted' && user?.uid) {
         await syncRemindersForUser(user.uid);
       } else if (status !== 'granted') {
-        Alert.alert(
+        showAlert(
           'Notifications disabled',
           'Enable notifications for this app in your device settings to get event reminders.'
         );
@@ -158,10 +159,10 @@ const Profile = () => {
   const handleSignOut = async () => {
     try {
       await auth.signOut();
-      Alert.alert('Success', 'Signed out successfully');
+      showAlert('Success', 'Signed out successfully');
     } catch (error) {
       console.error('Sign out error:', error);
-      Alert.alert('Error', 'Failed to sign out');
+      showAlert('Error', 'Failed to sign out');
     }
   };
 
