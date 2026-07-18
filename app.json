@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "campus-event-notifier-app",
+    "name": "BuzzUp",
     "slug": "campus-event-notifier-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/buzzup-app-icon.png",
     "scheme": "campuseventnotifierapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,22 +13,33 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#F7C928",
+        "foregroundImage": "./assets/images/buzzup-app-icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/buzzup-app-icon.png"
     },
     "plugins": [
       "expo-router",
       "expo-font",
       "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFF9E8",
+          "image": "./assets/images/buzzup-app-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "dark": {
+            "backgroundColor": "#2A1A0E",
+            "image": "./assets/images/buzzup-app-icon.png"
+          }
+        }
+      ],
       [
         "expo-image-picker",
         {
