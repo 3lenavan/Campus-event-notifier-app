@@ -19,7 +19,7 @@ import { Club } from "../types";
 import { useAppTheme, LightThemeColors } from "../ThemeContext";
 import { showAlert } from "../lib/alert";
 
-export const VerifyClub = () => {
+export const VerifyClub = ({ onSuccess }: { onSuccess?: () => void }) => {
   const { user, refreshProfile } = useAuthUser();
   const themeContext = useAppTheme();
   const colors = themeContext?.colors || LightThemeColors;
@@ -85,6 +85,7 @@ export const VerifyClub = () => {
 
     setClubInput("");
     setCodeInput("");
+    onSuccess?.();
   };
 
   const filtered = clubs.filter(

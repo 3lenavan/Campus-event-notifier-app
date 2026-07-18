@@ -2,6 +2,7 @@ import {
   createDemoEvent,
   getDemoInteractionCounts,
   listDemoEvents,
+  updateDemoEventStatus,
 } from '../../data/demoData';
 import { isDemoMode, supabase } from '../../data/supabaseClient';
 import { getEventPolicy } from '../lib/eventPolicy';
@@ -79,7 +80,8 @@ export const listEvents = async (): Promise<Event[]> => {
  */
 export const listApprovedEvents = async (forceRefresh: boolean = false): Promise<Event[]> => {
   if (isDemoMode) {
-    return listDemoEventsWithAttendees();
+    const events = await listDemoEventsWithAttendees();
+    return events.filter((event) => event.status === 'approved');
   }
 
   try {
@@ -136,7 +138,7 @@ export const listApprovedEvents = async (forceRefresh: boolean = false): Promise
 export const listClubEvents = async (clubId: string): Promise<Event[]> => {
   if (isDemoMode) {
     const events = await listDemoEventsWithAttendees();
-    return events.filter((event) => event.clubId === clubId);
+    return events.filter((event) => event.clubId === clubId && event.status === 'approved');
   }
 
   try {
@@ -395,5 +397,106 @@ export const createEvent = async (eventInput: CreateEventInput, createdBy: strin
   } catch (error) {
     console.error('❌ Error creating event:', error);
     throw error;
+  }
+};
+
+/**
+ * Approve a pending event so it appears in public listings
+ */
+export const approveEvent = async (eventId: string): Promise<void> => {
+  if (isDemoMode) {
+    await updateDemoEventStatus(eventId, 'approved');
+    return;
+  }
+
+  const numericId = parseInt(eventId);
+  if (isNaN(numericId)) throw new Error('Event not found');
+
+  const { data, error } = await supabase
+    .from('events')
+    .update({ status: 'approved', moderation_note: null })
+    .eq('id', numericId)
+    .select('id');
+
+  if (error) {
+    console.error('Error approving event:', error);
+    throw error;
+  }
+  if (!data || data.length === 0) throw new Error('Event not found');
+};
+
+/**
+ * Reject a pending event with a note explaining why
+ */
+export const rejectEvent = async (eventId: string, moderationNote: string): Promise<void> => {
+  if (isDemoMode) {
+    await updateDemoEventStatus(eventId, 'rejected', moderationNote);
+    return;
+  }
+
+  const numericId = parseInt(eventId);
+  if (isNaN(numericId)) throw new Error('Event not found');
+
+  const { data, error } = await supabase
+    .from('events')
+    .update({ status: 'rejected', moderation_note: moderationNote })
+    .eq('id', numericId)
+    .select('id');
+
+  if (error) {
+    console.error('Error rejecting event:', error);
+    throw error;
+  }
+  if (!data || data.length === 0) throw new Error('Event not found');
+};
+
+/**
+ * Get pending events awaiting moderation, optionally scoped to one club
+ */
+export const getPendingEvents = async (clubId?: string): Promise<Event[]> => {
+  if (isDemoMode) {
+    const events = await listDemoEvents();
+    return events.filter(
+      (event) => event.status === 'pending' && (!clubId || event.clubId === clubId)
+    );
+  }
+
+  try {
+    let query = supabase
+      .from('events')
+      .select('*')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (clubId) {
+      const numericClubId = parseInt(clubId);
+      if (isNaN(numericClubId)) return [];
+      query = query.eq('club_id', numericClubId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error listing pending events:', error);
+      return [];
+    }
+
+    return (data || []).map((row: any) => ({
+      id: String(row.id),
+      title: row.title,
+      description: row.description,
+      clubId: String(row.club_id),
+      dateISO: row.date_iso,
+      location: row.location,
+      createdBy: row.created_by,
+      createdAt: new Date(row.created_at).getTime(),
+      status: row.status || 'pending',
+      moderationNote: row.moderation_note || undefined,
+      imageUrl: row.image_url || undefined,
+      checkinCode: row.checkin_code || undefined,
+    }));
+  } catch (error) {
+    console.error('Error listing pending events:', error);
+    return [];
   }
 };

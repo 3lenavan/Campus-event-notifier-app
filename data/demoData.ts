@@ -175,6 +175,20 @@ const readCustomEvents = async (): Promise<Event[]> => {
   }
 };
 
+// Only user-created events can change status; the seed events are rebuilt on every
+// read and are always approved, so a moderation action on one is "not found".
+export const updateDemoEventStatus = async (
+  eventId: string,
+  status: "approved" | "rejected",
+  moderationNote?: string
+): Promise<void> => {
+  const customEvents = await readCustomEvents();
+  const index = customEvents.findIndex((event) => event.id === eventId);
+  if (index === -1) throw new Error("Event not found");
+  customEvents[index] = { ...customEvents[index], status, moderationNote };
+  await AsyncStorage.setItem(CUSTOM_EVENTS_KEY, JSON.stringify(customEvents));
+};
+
 export const listDemoEvents = async (): Promise<Event[]> => {
   const customEvents = await readCustomEvents();
   return [...customEvents, ...buildSeedEvents()].sort(

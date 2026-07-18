@@ -3,13 +3,20 @@ import { normalizeForModeration, isProfane, validateEventInput, getDefaultDenyli
 import { getLS, setLS } from '../lib/localStorage';
 import { getEventPolicy } from '../lib/eventPolicy';
 
-// Mock the dependencies
+// Mock the dependencies. Rate limits read existing events through
+// eventsService.listEvents, so that's what gets mocked — not storage directly.
 vi.mock('../lib/localStorage');
 vi.mock('../lib/eventPolicy');
+vi.mock('../services/eventsService', () => ({
+  listEvents: vi.fn(),
+}));
+
+const { listEvents } = await import('../services/eventsService');
 
 describe('Event Validators', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(listEvents).mockResolvedValue([]);
   });
 
   describe('normalizeForModeration', () => {
@@ -348,7 +355,7 @@ describe('Event Validators', () => {
           { id: '2', clubId: 'test-club', createdAt: Date.now() - 2000 },
           { id: '3', clubId: 'test-club', createdAt: Date.now() - 3000 },
         ];
-        vi.mocked(getLS).mockResolvedValue(existingEvents);
+        vi.mocked(listEvents).mockResolvedValue(existingEvents as any);
 
         const result = await validateEventInput({
           title: 'Valid title',
@@ -366,7 +373,7 @@ describe('Event Validators', () => {
         const userEvents = [
           { id: '1', createdBy: 'user123', createdAt: Date.now() - 30 * 60 * 1000 }, // 30 minutes ago
         ];
-        vi.mocked(getLS).mockResolvedValue(userEvents);
+        vi.mocked(listEvents).mockResolvedValue(userEvents as any);
 
         const result = await validateEventInput({
           title: 'Valid title',
@@ -384,7 +391,7 @@ describe('Event Validators', () => {
         const existingEvents = [
           { id: '1', clubId: 'test-club', createdAt: Date.now() - 1000 },
         ];
-        vi.mocked(getLS).mockResolvedValue(existingEvents);
+        vi.mocked(listEvents).mockResolvedValue(existingEvents as any);
 
         const result = await validateEventInput({
           title: 'Valid title',

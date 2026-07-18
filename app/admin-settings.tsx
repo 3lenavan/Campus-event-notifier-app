@@ -108,9 +108,10 @@ export default function AdminSettings() {
     }
     setSavingCodes(true);
     try {
+      // The clubs table stores a single code_hash, so whichever code was entered
+      // rotates that one shared verification code.
       await updateClubCodes(selectedClubId, {
-        newMemberCode: newMemberCode || undefined,
-        newModeratorCode: newModeratorCode || undefined,
+        newCode: newMemberCode || newModeratorCode || undefined,
       });
       setNewMemberCode('');
       setNewModeratorCode('');
